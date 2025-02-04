@@ -1,17 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with brand gradient -->
   <defs>
-    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" style="stop-color:#9333EA"/>
       <stop offset="100%" style="stop-color:#DB2777"/>
     </linearGradient>
   </defs>
-  <rect width="1200" height="630" fill="url(#gradient)"/>
-  <path d="M540 215L575 287.5L650 320L575 352.5L540 425L505 352.5L430 320L505 287.5L540 215Z" 
-        fill="white" stroke="white" stroke-width="4"/>
-  <path d="M640 375L655 405L685 420L655 435L640 465L625 435L595 420L625 405L640 375Z" 
-        fill="white" stroke="white" stroke-width="4"/>
-  <path d="M440 245L455 275L485 290L455 305L440 335L425 305L395 290L425 275L440 245Z" 
-        fill="white" stroke="white" stroke-width="4"/>
-  <text x="600" y="500" text-anchor="middle" style="font-family: Arial; font-size: 48px; font-weight: bold; fill: white">ReachMix</text>
+  <rect width="1200" height="630" fill="url(#brandGradient)"/>
+  
+  <!-- Sparkles icon - scaled up version of the Lucide icon -->
+  <g transform="translate(480,160) scale(8)" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+    <path d="M5 3v4"/>
+    <path d="M19 17v4"/>
+    <path d="M3 5h4"/>
+    <path d="M17 19h4"/>
+  </g>
+  
+  <!-- App name and tagline -->
+  <text x="600" y="440" text-anchor="middle" font-family="Arial" font-size="84" font-weight="bold" fill="white">ReachMix</text>
+  <text x="600" y="500" text-anchor="middle" font-family="Arial" font-size="42" font-weight="normal" fill="white" opacity="0.9">Transform Your App Store Presence</text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="560" text-anchor="middle" font-family="Arial" font-size="32" fill="white" opacity="0.8">App Store Optimization &amp; Translation</text>
 </svg> 

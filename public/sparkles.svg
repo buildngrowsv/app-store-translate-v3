@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M12 3L14.5 8.5L20 11L14.5 13.5L12 19L9.5 13.5L4 11L9.5 8.5L12 3Z" 
-        fill="#9333EA" stroke="#9333EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M19 16L20 18L22 19L20 20L19 22L18 20L16 19L18 18L19 16Z" 
-        fill="#DB2777" stroke="#DB2777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M5 6L6 8L8 9L6 10L5 12L4 10L2 9L4 8L5 6Z" 
-        fill="#DB2777" stroke="#DB2777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9333EA"/>
+      <stop offset="100%" style="stop-color:#DB2777"/>
+    </linearGradient>
+  </defs>
+  
+  <g fill="none" stroke="url(#brandGradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+    <path d="M5 3v4"/>
+    <path d="M19 17v4"/>
+    <path d="M3 5h4"/>
+    <path d="M17 19h4"/>
+  </g>
 </svg> 
