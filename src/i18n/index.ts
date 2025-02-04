@@ -14,7 +14,85 @@ import { ta } from './translations/ta';
 import { ja } from './translations/ja';
 import { ko } from './translations/ko';
 
-export const translations = {
+// Translation type definitions
+interface TranslationStat {
+  value: string;
+  label: string;
+}
+
+interface TranslationTestimonial {
+  content: string;
+  author: string;
+  role: string;
+}
+
+interface TranslationHero {
+  title: string;
+  subtitle: string;
+  startTrial: string;
+  login: string;
+}
+
+interface TranslationFeatures {
+  aiTitle: string;
+  aiDesc: string;
+  asoTitle: string;
+  asoDesc: string;
+  globalTitle: string;
+  globalDesc: string;
+}
+
+interface TranslationComparison {
+  title: string;
+  before: {
+    title: string;
+    content: string;
+  };
+  after: {
+    title: string;
+    content: string;
+  };
+}
+
+interface TranslationPricing {
+  title: string;
+  starter: {
+    title: string;
+    price: string;
+    description: string;
+    features: string[];
+  };
+  growth: {
+    title: string;
+    price: string;
+    description: string;
+    features: string[];
+  };
+  enterprise: {
+    title: string;
+    price: string;
+    description: string;
+    features: string[];
+  };
+}
+
+export interface Translation {
+  home: {
+    hero: TranslationHero;
+    features: TranslationFeatures;
+    stats: {
+      items: TranslationStat[];
+    };
+    testimonials: {
+      title: string;
+      items: TranslationTestimonial[];
+    };
+    comparison: TranslationComparison;
+    pricing: TranslationPricing;
+  };
+}
+
+export const translations: Record<Language, Translation> = {
   english: en,
   chinese: zh,
   spanish: es,

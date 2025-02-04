@@ -5,6 +5,11 @@ interface StatsSectionProps {
   lang: Language;
 }
 
+interface Stat {
+  value: string;
+  label: string;
+}
+
 export const StatsSection: React.FC<StatsSectionProps> = ({ lang }) => {
   const t = useTranslation(lang);
 
@@ -14,7 +19,7 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ lang }) => {
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-transparent"></div>
       <div className="container mx-auto px-4 relative">
         <div className="grid md:grid-cols-4 gap-8 text-center">
-          {t.home.stats.items.map((stat, index) => (
+          {t.home.stats.items.map((stat: Stat, index: number) => (
             <div 
               key={index} 
               className="backdrop-blur-sm bg-white/10 rounded-lg p-6 transform hover:scale-105 transition-transform duration-200"

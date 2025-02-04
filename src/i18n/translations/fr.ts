@@ -14,6 +14,45 @@ export const fr = {
       globalTitle: "Portée Mondiale",
       globalDesc: "Traduisez instantanément le contenu de votre application dans plus de 50 langues"
     },
+    stats: {
+      items: [
+        { value: "50+", label: "Langues Prises en Charge" },
+        { value: "10K+", label: "Applications Optimisées" },
+        { value: "95%", label: "Satisfaction Client" },
+        { value: "2X", label: "Augmentation Moyenne des Téléchargements" }
+      ]
+    },
+    testimonials: {
+      title: "Ce Que Disent Nos Clients",
+      items: [
+        {
+          content: "ReachMix a complètement transformé notre présence mondiale. Les traductions sont précises et naturelles.",
+          author: "Sophie Martin",
+          role: "Développeuse d'Applications"
+        },
+        {
+          content: "L'optimisation ASO fonctionne vraiment. Nos téléchargements ont doublé en trois mois.",
+          author: "Pierre Dubois",
+          role: "PDG d'AppTech"
+        },
+        {
+          content: "Le meilleur service de traduction que nous ayons utilisé. Rapide, précis et avec un excellent support.",
+          author: "Marie Laurent",
+          role: "Chef de Produit"
+        }
+      ]
+    },
+    comparison: {
+      title: "Voyez la Différence",
+      before: {
+        title: "Avant ReachMix",
+        content: "Application calculatrice basique pour une utilisation quotidienne. Vous aide à calculer rapidement.\n\nFonctionnalités :\n- Addition\n- Soustraction\n- Multiplication\n- Division"
+      },
+      after: {
+        title: "Après ReachMix",
+        content: "Transformez vos calculs quotidiens avec notre calculatrice intuitive et puissante. Profitez de calculs ultra-rapides avec une interface magnifiquement conçue qui rend les mathématiques simples comme bonjour.\n\nFonctionnalités Principales :\n- Calculs instantanés avec résultats en temps réel\n- Opérations mathématiques complètes\n- Interface épurée et moderne pour une utilisation sans effort\n- Parfaite pour les étudiants, les professionnels et tous les autres"
+      }
+    },
     pricing: {
       title: "Tarification Simple et Transparente",
       starter: {

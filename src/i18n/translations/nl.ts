@@ -14,6 +14,45 @@ export const nl = {
       globalTitle: "Wereldwijd Bereik",
       globalDesc: "Vertaal je app-content direct naar meer dan 50 talen"
     },
+    stats: {
+      items: [
+        { value: "50+", label: "Ondersteunde Talen" },
+        { value: "10K+", label: "Geoptimaliseerde Apps" },
+        { value: "95%", label: "Klanttevredenheid" },
+        { value: "2X", label: "Gemiddelde Download Toename" }
+      ]
+    },
+    testimonials: {
+      title: "Wat Onze Klanten Zeggen",
+      items: [
+        {
+          content: "ReachMix heeft onze wereldwijde aanwezigheid compleet getransformeerd. De vertalingen zijn nauwkeurig en natuurlijk.",
+          author: "Jan de Vries",
+          role: "App Ontwikkelaar"
+        },
+        {
+          content: "De ASO-optimalisatie werkt echt. Onze downloads zijn in drie maanden verdubbeld.",
+          author: "Emma van Dijk",
+          role: "CEO van AppTech"
+        },
+        {
+          content: "De beste vertaalservice die we ooit hebben gebruikt. Snel, nauwkeurig en met uitstekende ondersteuning.",
+          author: "Lucas Bakker",
+          role: "Product Manager"
+        }
+      ]
+    },
+    comparison: {
+      title: "Zie het Verschil",
+      before: {
+        title: "Voor ReachMix",
+        content: "Basis rekenmachine app voor dagelijks gebruik. Helpt je snel berekeningen maken.\n\nFuncties:\n- Optellen\n- Aftrekken\n- Vermenigvuldigen\n- Delen"
+      },
+      after: {
+        title: "Na ReachMix",
+        content: "Transformeer je dagelijkse berekeningen met onze intuïtieve en krachtige rekenmachine app. Ervaar bliksemsnelle berekeningen met een prachtig ontworpen interface die wiskunde een fluitje van een cent maakt.\n\nKernfuncties:\n- Directe berekeningen met realtime resultaten\n- Uitgebreide wiskundige bewerkingen\n- Strakke, moderne interface voor moeiteloos gebruik\n- Perfect voor studenten, professionals en iedereen daartussenin"
+      }
+    },
     pricing: {
       title: "Eenvoudige, Transparante Prijzen",
       starter: {

@@ -14,6 +14,45 @@ export const zh = {
       globalTitle: "全球覆盖",
       globalDesc: "即时将您的应用内容翻译成50多种语言"
     },
+    stats: {
+      items: [
+        { value: "50+", label: "支持语言" },
+        { value: "10K+", label: "优化应用" },
+        { value: "95%", label: "客户满意度" },
+        { value: "2X", label: "平均下载增长" }
+      ]
+    },
+    testimonials: {
+      title: "客户评价",
+      items: [
+        {
+          content: "ReachMix彻底改变了我们的全球形象。翻译准确自然。",
+          author: "张明",
+          role: "应用开发者"
+        },
+        {
+          content: "ASO优化确实有效。我们的下载量在三个月内翻了一番。",
+          author: "李华",
+          role: "AppTech CEO"
+        },
+        {
+          content: "我们用过的最好的翻译服务。快速、准确，支持出色。",
+          author: "王芳",
+          role: "产品经理"
+        }
+      ]
+    },
+    comparison: {
+      title: "对比效果",
+      before: {
+        title: "使用ReachMix之前",
+        content: "基础计算器应用，用于日常使用。帮助您快速计算。\n\n功能：\n- 加法\n- 减法\n- 乘法\n- 除法"
+      },
+      after: {
+        title: "使用ReachMix之后",
+        content: "通过我们直观强大的计算器应用改变您的日常计算体验。体验闪电般的计算速度，精美设计的界面让数学变得轻而易举。\n\n主要功能：\n- 实时结果的即时计算\n- 全面的数学运算\n- 清晰现代的界面，使用毫不费力\n- 完美适合学生、专业人士和所有用户"
+      }
+    },
     pricing: {
       title: "简单透明的定价",
       starter: {

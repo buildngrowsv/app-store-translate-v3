@@ -14,6 +14,45 @@ export const de = {
       globalTitle: "Globale Reichweite",
       globalDesc: "Übersetzen Sie Ihre App-Inhalte sofort in über 50 Sprachen"
     },
+    stats: {
+      items: [
+        { value: "50+", label: "Unterstützte Sprachen" },
+        { value: "10K+", label: "Optimierte Apps" },
+        { value: "95%", label: "Kundenzufriedenheit" },
+        { value: "2X", label: "Durchschnittliche Download-Steigerung" }
+      ]
+    },
+    testimonials: {
+      title: "Was Unsere Kunden Sagen",
+      items: [
+        {
+          content: "ReachMix hat unsere globale Präsenz komplett transformiert. Die Übersetzungen sind präzise und natürlich.",
+          author: "Thomas Weber",
+          role: "App-Entwickler"
+        },
+        {
+          content: "Die ASO-Optimierung funktioniert wirklich. Unsere Downloads haben sich in drei Monaten verdoppelt.",
+          author: "Lisa Schmidt",
+          role: "CEO von AppTech"
+        },
+        {
+          content: "Der beste Übersetzungsservice, den wir je genutzt haben. Schnell, präzise und mit exzellentem Support.",
+          author: "Michael Müller",
+          role: "Produktmanager"
+        }
+      ]
+    },
+    comparison: {
+      title: "Sehen Sie den Unterschied",
+      before: {
+        title: "Vor ReachMix",
+        content: "Einfache Taschenrechner-App für den täglichen Gebrauch. Hilft Ihnen beim schnellen Rechnen.\n\nFunktionen:\n- Addition\n- Subtraktion\n- Multiplikation\n- Division"
+      },
+      after: {
+        title: "Nach ReachMix",
+        content: "Transformieren Sie Ihre täglichen Berechnungen mit unserer intuitiven und leistungsstarken Taschenrechner-App. Erleben Sie blitzschnelle Berechnungen mit einer wunderschön gestalteten Benutzeroberfläche, die Mathematik zum Kinderspiel macht.\n\nHauptfunktionen:\n- Sofortige Berechnungen mit Echtzeit-Ergebnissen\n- Umfassende mathematische Operationen\n- Klare, moderne Benutzeroberfläche für mühelose Bedienung\n- Perfekt für Studenten, Berufstätige und alle anderen"
+      }
+    },
     pricing: {
       title: "Einfache, Transparente Preisgestaltung",
       starter: {

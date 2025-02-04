@@ -38,7 +38,7 @@ export const Header: React.FC<HeaderProps> = ({ lang = 'english' }) => {
               <button className="text-white/90 hover:text-white transition-colors">
                 Languages
               </button>
-              <div className="fixed top-16 right-0 mt-2 w-48 bg-white rounded-lg shadow-lg 
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg 
                             opacity-0 invisible group-hover:opacity-100 group-hover:visible 
                             transition-all duration-300">
                 <div className="py-2">
