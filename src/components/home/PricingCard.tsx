@@ -43,12 +43,12 @@ export const PricingCard: React.FC<PricingCardProps> = ({
         </li>
       ))}
     </ul>
-    <Link to="/signup" className="block">
+    <Link to={price === 'Contact Us' ? '/contact' : '/signup'} className="block">
       <Button
         variant={highlighted ? 'secondary' : 'primary'}
         className="w-full h-14 text-base font-semibold shadow-lg"
       >
-        Start Free Trial
+        {price === 'Contact Us' ? 'Contact Us' : 'Start Free Trial'}
       </Button>
     </Link>
   </div>
