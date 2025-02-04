@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9333EA"/>
+      <stop offset="100%" style="stop-color:#DB2777"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#gradient)"/>
+  <path d="M540 215L575 287.5L650 320L575 352.5L540 425L505 352.5L430 320L505 287.5L540 215Z" 
+        fill="white" stroke="white" stroke-width="4"/>
+  <path d="M640 375L655 405L685 420L655 435L640 465L625 435L595 420L625 405L640 375Z" 
+        fill="white" stroke="white" stroke-width="4"/>
+  <path d="M440 245L455 275L485 290L455 305L440 335L425 305L395 290L425 275L440 245Z" 
+        fill="white" stroke="white" stroke-width="4"/>
+  <text x="600" y="500" text-anchor="middle" style="font-family: Arial; font-size: 48px; font-weight: bold; fill: white">ReachMix</text>
+</svg> 
