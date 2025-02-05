@@ -62,10 +62,10 @@ export const ja = {
         features: ["1プロジェクト", "全機能", "トライアルで3言語"]
       },
       growth: {
-        title: "グロース",
-        price: "99",
-        description: "小規模チームに最適",
-        features: ["3プロジェクト", "全機能", "優先サポート"]
+        title: "プロ",
+        price: "79",
+        description: "成長中のビジネスに最適",
+        features: ["25言語まで", "高度なASO最適化", "優先サポート", "週次アップデート", "カスタムキーワード"]
       },
       enterprise: {
         title: "エンタープライズ",

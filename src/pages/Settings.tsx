@@ -36,7 +36,7 @@ export const Settings: React.FC = () => {
             <div className="flex-grow">
               <h2 className="text-xl font-semibold mb-4">Subscription</h2>
               <div className="mb-4">
-                <p className="text-gray-600">Current Plan: Growth</p>
+                <p className="text-gray-600">Current Plan: Pro</p>
                 <p className="text-gray-600">Next billing date: April 15, 2024</p>
               </div>
               <div className="flex space-x-4">

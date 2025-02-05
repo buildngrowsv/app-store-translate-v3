@@ -62,10 +62,10 @@ export const en = {
         features: ["1 Project", "All Features", "3 Languages in Trial"]
       },
       growth: {
-        title: "Growth",
-        price: "99",
-        description: "Ideal for small teams",
-        features: ["3 Projects", "All Features", "Priority Support"]
+        title: "Pro",
+        price: "79",
+        description: "Ideal for growing businesses",
+        features: ["Up to 25 languages", "Advanced ASO optimization", "Priority Support", "Weekly updates", "Custom keywords"]
       },
       enterprise: {
         title: "Enterprise",

@@ -3,13 +3,15 @@ import { Link } from 'react-router-dom';
 import { Star } from 'lucide-react';
 import { Button } from '../Button';
 import { cn } from '../../lib/utils';
+import { CheckoutButton } from '../payments/CheckoutButton';
 
 interface PricingCardProps {
   title: string;
-  price: string;
+  price: string | number;
   description: string;
   features: string[];
   highlighted?: boolean;
+  priceId?: string;
 }
 
 export const PricingCard: React.FC<PricingCardProps> = ({
@@ -18,6 +20,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
   description,
   features,
   highlighted,
+  priceId
 }) => (
   <div
     className={cn(
@@ -30,9 +33,9 @@ export const PricingCard: React.FC<PricingCardProps> = ({
     <h3 className="text-2xl font-bold mb-2">{title}</h3>
     <div className="mb-4">
       <span className="text-4xl font-bold">
-        {price === 'Contact Us' ? price : `$${price}`}
+        {typeof price === 'number' ? `$${price}` : price}
       </span>
-      {price !== 'Contact Us' && <span className="text-sm">/month</span>}
+      {typeof price === 'number' && <span className="text-sm">/month</span>}
     </div>
     <p className="mb-8 opacity-90">{description}</p>
     <ul className="space-y-4 mb-8">
@@ -43,13 +46,22 @@ export const PricingCard: React.FC<PricingCardProps> = ({
         </li>
       ))}
     </ul>
-    <Link to={price === 'Contact Us' ? '/contact' : '/signup'} className="block">
-      <Button
+    {price === 'Contact Us' ? (
+      <Link to="/contact" className="block">
+        <CheckoutButton
+          priceId=""
+          planName={title}
+          variant={highlighted ? 'secondary' : 'primary'}
+          className="w-full h-14 text-base font-semibold shadow-lg"
+        />
+      </Link>
+    ) : (
+      <CheckoutButton
+        priceId={priceId || ''}
+        planName={title}
         variant={highlighted ? 'secondary' : 'primary'}
         className="w-full h-14 text-base font-semibold shadow-lg"
-      >
-        {price === 'Contact Us' ? 'Contact Us' : 'Start Free Trial'}
-      </Button>
-    </Link>
+      />
+    )}
   </div>
 );

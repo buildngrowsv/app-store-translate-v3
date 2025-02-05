@@ -62,10 +62,10 @@ export const ko = {
         features: ["1개 프로젝트", "모든 기능", "체험판에서 3개 언어"]
       },
       growth: {
-        title: "그로스",
-        price: "99",
-        description: "소규모 팀에 이상적",
-        features: ["3개 프로젝트", "모든 기능", "우선 지원"]
+        title: "프로",
+        price: "79",
+        description: "성장하는 비즈니스에 이상적",
+        features: ["최대 25개 언어", "고급 ASO 최적화", "우선 지원", "주간 업데이트", "맞춤 키워드"]
       },
       enterprise: {
         title: "엔터프라이즈",

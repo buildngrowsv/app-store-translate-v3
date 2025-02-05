@@ -48,9 +48,9 @@ export const Terms: React.FC = () => {
             Subscription plans and billing:
           </p>
           <ul className="list-disc pl-6 space-y-2">
-            <li>Starter: $49/month for one project</li>
-            <li>Growth: $99/month for three projects</li>
-            <li>Enterprise: Custom pricing for unlimited projects</li>
+            <li>Starter: $29/month - Up to 10 languages</li>
+            <li>Pro: $79/month - Up to 25 languages</li>
+            <li>Enterprise: Custom pricing - Unlimited languages</li>
           </ul>
           <p className="mt-4">
             Subscriptions are billed in advance on a monthly basis. You can cancel your subscription at any time.

@@ -62,10 +62,10 @@ export const zh = {
         features: ["1个项目", "所有功能", "试用3种语言"]
       },
       growth: {
-        title: "成长版",
-        price: "99",
-        description: "适合小型团队",
-        features: ["3个项目", "所有功能", "优先支持"]
+        title: "专业版",
+        price: "79",
+        description: "适合成长型企业",
+        features: ["支持25种语言", "高级ASO优化", "优先支持", "每周更新", "自定义关键词"]
       },
       enterprise: {
         title: "企业版",

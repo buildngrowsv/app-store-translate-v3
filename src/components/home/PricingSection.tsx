@@ -1,6 +1,7 @@
 import React from 'react';
 import { PricingCard } from './PricingCard';
 import { useTranslation, Language } from '../../i18n';
+import { STRIPE_PLANS } from '../../config/stripe';
 
 interface PricingSectionProps {
   lang?: Language;
@@ -19,6 +20,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ lang = 'english'
             price={t.home.pricing.starter.price}
             description={t.home.pricing.starter.description}
             features={t.home.pricing.starter.features}
+            priceId={STRIPE_PLANS.STARTER.id}
           />
           <PricingCard
             title={t.home.pricing.growth.title}
@@ -26,6 +28,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ lang = 'english'
             description={t.home.pricing.growth.description}
             features={t.home.pricing.growth.features}
             highlighted
+            priceId={STRIPE_PLANS.PRO.id}
           />
           <PricingCard
             title={t.home.pricing.enterprise.title}
