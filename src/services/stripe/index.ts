@@ -78,4 +78,47 @@ export class StripeService {
   static async handleSubscriptionWebhook(event: any): Promise<void> {
     // Implementation will be added in the webhook handler
   }
+
+  // Create and redirect to customer portal
+  static async redirectToCustomerPortal(): Promise<void> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/stripe/create-portal-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      console.error('Error redirecting to customer portal:', error);
+      throw error;
+    }
+  }
+
+  // Submit cancellation feedback
+  static async submitCancellationFeedback(reason: string, feedback: string): Promise<void> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/stripe/cancellation-feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reason, feedback })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Error submitting cancellation feedback:', error);
+      throw error;
+    }
+  }
 } 

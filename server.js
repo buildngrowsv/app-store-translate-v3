@@ -102,6 +102,48 @@ app.post('/api/stripe/webhook', bodyParser.raw({ type: 'application/json' }), as
   }
 });
 
+// Create portal session endpoint
+app.post('/api/stripe/create-portal-session', async (req, res) => {
+  try {
+    const { customerId } = req.body;
+    
+    if (!customerId) {
+      return res.status(400).json({ message: 'Customer ID is required' });
+    }
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: `${process.env.VITE_APP_URL}/settings`
+    });
+
+    res.json({ url: session.url });
+  } catch (error) {
+    console.error('Error creating portal session:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Store cancellation feedback
+app.post('/api/stripe/cancellation-feedback', async (req, res) => {
+  try {
+    const { reason, feedback } = req.body;
+    const userId = req.user?.id; // You'll need to add user authentication
+
+    if (!reason) {
+      return res.status(400).json({ message: 'Reason is required' });
+    }
+
+    // Store feedback in your database
+    // This is where you'll integrate with your database
+    console.log('Cancellation feedback:', { userId, reason, feedback });
+
+    res.json({ message: 'Feedback received' });
+  } catch (error) {
+    console.error('Error storing cancellation feedback:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });

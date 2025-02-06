@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from './Button';
 import { Sparkles } from 'lucide-react';
 import { useTranslation, Language, languageMap } from '../i18n';
-import { useAuth } from './auth/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { UserNav } from './UserNav';
 
 interface HeaderProps {

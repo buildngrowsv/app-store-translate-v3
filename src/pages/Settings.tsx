@@ -1,30 +1,82 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { CreditCard, Lock, LifeBuoy } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { StripeService } from '../services/stripe';
+import { CancellationSurvey } from '../components/modals/CancellationSurvey';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 export const Settings: React.FC = () => {
-  const [currentPassword, setCurrentPassword] = React.useState('');
-  const [newPassword, setNewPassword] = React.useState('');
-  const [confirmPassword, setConfirmPassword] = React.useState('');
-  const [supportSubject, setSupportSubject] = React.useState('');
-  const [supportMessage, setSupportMessage] = React.useState('');
+  const { user, userData, refreshUserData } = useAuth();
+  const { trackEvent } = useAnalytics();
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [supportSubject, setSupportSubject] = useState('');
+  const [supportMessage, setSupportMessage] = useState('');
+  const [showCancellationSurvey, setShowCancellationSurvey] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handlePasswordReset = (e: React.FormEvent) => {
+  const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement password reset logic
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      // TODO: Implement password reset logic with Firebase
+      setError(null);
+    } catch (error) {
+      setError('Failed to update password');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSupportTicket = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement support ticket submission
     window.location.href = `mailto:buildngrowsv@gmail.com?subject=${encodeURIComponent(supportSubject)}&body=${encodeURIComponent(supportMessage)}`;
+  };
+
+  const handleManageSubscription = async () => {
+    try {
+      setIsLoading(true);
+      await StripeService.redirectToCustomerPortal();
+    } catch (error) {
+      setError('Failed to access subscription management');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancellationConfirm = async (reason: string, feedback: string) => {
+    try {
+      await StripeService.submitCancellationFeedback(reason, feedback);
+      trackEvent('subscription_cancellation_feedback', {
+        reason,
+        feedback_provided: !!feedback
+      });
+      await StripeService.redirectToCustomerPortal();
+    } catch (error) {
+      setError('Failed to process cancellation');
+      setShowCancellationSurvey(false);
+    }
   };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <h1 className="text-2xl font-bold mb-8">Settings</h1>
+
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-md">
+          {error}
+        </div>
+      )}
 
       <div className="space-y-8">
         {/* Subscription Management */}
@@ -36,12 +88,35 @@ export const Settings: React.FC = () => {
             <div className="flex-grow">
               <h2 className="text-xl font-semibold mb-4">Subscription</h2>
               <div className="mb-4">
-                <p className="text-gray-600">Current Plan: Pro</p>
-                <p className="text-gray-600">Next billing date: April 15, 2024</p>
+                <p className="text-gray-600">
+                  Current Plan: {userData?.subscription?.plan || 'Free Trial'}
+                </p>
+                <p className="text-gray-600">
+                  Status: {userData?.subscription?.status || 'Inactive'}
+                </p>
+                {userData?.subscription?.trialEnd && (
+                  <p className="text-gray-600">
+                    Trial ends: {new Date(userData.subscription.trialEnd).toLocaleDateString()}
+                  </p>
+                )}
               </div>
               <div className="flex space-x-4">
-                <Button variant="outline">Change Plan</Button>
-                <Button variant="outline">Update Billing</Button>
+                <Button
+                  variant="primary"
+                  onClick={handleManageSubscription}
+                  disabled={isLoading}
+                >
+                  Manage Subscription
+                </Button>
+                {userData?.subscription?.status === 'active' && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowCancellationSurvey(true)}
+                    disabled={isLoading}
+                  >
+                    Cancel Subscription
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -77,7 +152,9 @@ export const Settings: React.FC = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                 />
-                <Button type="submit">Update Password</Button>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? 'Updating...' : 'Update Password'}
+                </Button>
               </form>
             </div>
           </div>
@@ -108,6 +185,7 @@ export const Settings: React.FC = () => {
                     value={supportMessage}
                     onChange={(e) => setSupportMessage(e.target.value)}
                     required
+                    aria-label="Support message"
                   />
                 </div>
                 <Button type="submit">Submit Ticket</Button>
@@ -116,6 +194,13 @@ export const Settings: React.FC = () => {
           </div>
         </Card>
       </div>
+
+      {showCancellationSurvey && (
+        <CancellationSurvey
+          onClose={() => setShowCancellationSurvey(false)}
+          onConfirmCancel={handleCancellationConfirm}
+        />
+      )}
     </div>
   );
 };

@@ -117,4 +117,6 @@ class OpenAIService {
   }
 }
 
+// Export a singleton instance
 export const openaiService = new OpenAIService();
+export type { ProjectResults };

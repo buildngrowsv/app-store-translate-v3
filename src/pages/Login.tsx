@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { AuthLayout } from '../components/AuthLayout';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
-import { useAuth } from '../components/auth/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 
 export const Login: React.FC = () => {
   const { signIn } = useAuth();
