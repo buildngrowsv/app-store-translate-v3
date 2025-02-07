@@ -46,9 +46,19 @@ export const Settings: React.FC = () => {
   const handleManageSubscription = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       await StripeService.redirectToCustomerPortal();
     } catch (error) {
-      setError('Failed to access subscription management');
+      console.error('Subscription management error:', error);
+      setError(
+        error instanceof Error 
+          ? error.message 
+          : 'Failed to access subscription management. Please try again later.'
+      );
+      // Show more detailed error message if available
+      if (error instanceof Error && error.message.includes('No Stripe customer ID found')) {
+        setError('Unable to access subscription portal. Please try refreshing the page or contact support if the issue persists.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -64,6 +74,21 @@ export const Settings: React.FC = () => {
             <p className="mt-1 text-sm text-gray-500">
               Manage your account settings and subscription preferences
             </p>
+            {user && (
+              <div className="mt-4 flex items-center space-x-2">
+                <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+                  <span className="text-sm font-medium text-purple-600">
+                    {user.email?.[0].toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{user.email}</p>
+                  <p className="text-xs text-gray-500">
+                    {userData?.subscription?.status === 'active' ? 'Premium Member' : 'Free Account'}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {error && (

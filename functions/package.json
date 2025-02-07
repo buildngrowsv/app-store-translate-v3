@@ -17,6 +17,8 @@
   },
   "main": "lib/index.js",
   "dependencies": {
+    "@types/cors": "^2.8.17",
+    "cors": "^2.8.5",
     "firebase-admin": "^11.11.1",
     "firebase-functions": "^5.1.0",
     "openai": "^4.28.0",

@@ -36,14 +36,23 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchProjects = async () => {
-      if (!user || !userData?.projects.length) {
+      if (!user || !userData) {
+        setProjects([]);
+        setLoading(false);
+        return;
+      }
+
+      // Initialize projects array if it doesn't exist
+      const projectIds = userData.projects || [];
+      
+      if (projectIds.length === 0) {
         setProjects([]);
         setLoading(false);
         return;
       }
 
       try {
-        const projectPromises = userData.projects.map((projectId: string) => 
+        const projectPromises = projectIds.map((projectId: string) => 
           FirebaseService.getProject(projectId)
         );
         

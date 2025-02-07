@@ -25,16 +25,16 @@ import {
   CollectionReference,
   enableIndexedDbPersistence
 } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCqyfe6xv13BpQhAwMf_UFXBltOsoHbYn8",
-  authDomain: "reachmix.firebaseapp.com",
-  projectId: "reachmix",
-  storageBucket: "reachmix.firebasestorage.app",
-  messagingSenderId: "308749387179",
-  appId: "1:308749387179:web:b635c6c88d22ca52c5beee",
-  measurementId: "G-WK6KD2YSCC"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
@@ -42,6 +42,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
+const functions = getFunctions(app);
 
 // Enable offline persistence
 try {
@@ -64,6 +65,7 @@ export class FirebaseService {
   // Sign up with email and password
   static async signUp(email: string, password: string): Promise<User> {
     try {
+      console.log('Starting signup process for:', email);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
       // Create user document in Firestore
@@ -77,8 +79,18 @@ export class FirebaseService {
         }
       };
 
+      console.log('Creating user document for:', userCredential.user.uid);
+      
       // Use set with merge option to handle potential conflicts
       await setDoc(doc(usersCollection, userCredential.user.uid), userData, { merge: true });
+      
+      // Wait a moment for the Cloud Function to create the Stripe customer
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Verify the Stripe customer was created
+      const userDoc = await getDoc(doc(usersCollection, userCredential.user.uid));
+      const stripeCustomerId = userDoc.data()?.stripeCustomerId;
+      console.log('Stripe customer ID after signup:', stripeCustomerId);
       
       return userCredential.user;
     } catch (error: any) {
@@ -263,4 +275,4 @@ export class FirebaseService {
   }
 }
 
-export { auth, analytics, db }; 
+export { auth, analytics, db, functions }; 

@@ -12,6 +12,7 @@ import * as admin from 'firebase-admin';
 import Stripe from 'stripe';
 import { OpenAI } from 'openai';
 import { UserRecord } from 'firebase-admin/auth';
+import * as cors from 'cors';
 
 interface TranslationRequest {
   text: string;
@@ -25,6 +26,12 @@ interface CallableRequest<T> {
     token: admin.auth.DecodedIdToken;
   };
 }
+
+// Initialize CORS middleware
+const corsHandler = cors({
+  origin: true, // Allow all origins for now - you can restrict this to specific domains
+  credentials: true,
+});
 
 // Initialize Firebase Admin
 admin.initializeApp();
@@ -41,54 +48,136 @@ const openai = new OpenAI({
 
 // Authentication Functions
 export const createUser = functions.auth.user().onCreate(async (user: UserRecord) => {
-  // Create a user document in Firestore when a new user signs up
-  const userDoc = {
-    email: user.email,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    subscription: {
-      status: 'inactive',
-      plan: null,
-    },
-  };
+  try {
+    // Create a Stripe customer
+    const customer = await stripe.customers.create({
+      email: user.email,
+      metadata: {
+        firebaseUID: user.uid
+      }
+    });
 
-  await admin.firestore().collection('users').doc(user.uid).set(userDoc);
+    // Create a user document in Firestore when a new user signs up
+    const userDoc = {
+      email: user.email,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      stripeCustomerId: customer.id,
+      subscription: {
+        status: 'inactive',
+        plan: null,
+      },
+    };
+
+    await admin.firestore().collection('users').doc(user.uid).set(userDoc);
+    
+    console.log(`Created user ${user.uid} with Stripe customer ID ${customer.id}`);
+  } catch (error) {
+    console.error('Error in createUser function:', error);
+    throw error;
+  }
+});
+
+// Function to create Stripe customer for existing user
+export const createStripeCustomer = functions.https.onCall(async (data, context) => {
+  // CORS is automatically handled for callable functions
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'The function must be called while authenticated.'
+    );
+  }
+
+  try {
+    const userId = context.auth.uid;
+    console.log('Creating Stripe customer for user:', userId);
+    
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+    
+    if (!userDoc.exists) {
+      console.error('User document not found:', userId);
+      throw new functions.https.HttpsError('not-found', 'User document not found');
+    }
+
+    const userData = userDoc.data();
+    
+    // Check if user already has a Stripe customer ID
+    if (userData?.stripeCustomerId) {
+      console.log('User already has Stripe customer ID:', userData.stripeCustomerId);
+      return { customerId: userData.stripeCustomerId };
+    }
+
+    // Create new Stripe customer
+    const customer = await stripe.customers.create({
+      email: context.auth.token.email || undefined,
+      metadata: {
+        firebaseUID: userId
+      }
+    });
+
+    console.log('Created new Stripe customer:', customer.id);
+
+    // Update user document with Stripe customer ID
+    await admin.firestore().collection('users').doc(userId).update({
+      stripeCustomerId: customer.id
+    });
+
+    console.log(`Created Stripe customer for existing user ${userId}: ${customer.id}`);
+    return { customerId: customer.id };
+  } catch (error) {
+    console.error('Error creating Stripe customer:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to create Stripe customer');
+  }
 });
 
 // Stripe Webhook Handler
 export const stripeWebhook = functions.https.onRequest(async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  
-  try {
-    const event = stripe.webhooks.constructEvent(
-      req.rawBody,
-      sig || '',
-      functions.config().stripe.webhook_secret
-    );
+  // Wrap the request handler in CORS middleware
+  return corsHandler(req, res, async () => {
+    const sig = req.headers['stripe-signature'];
+    
+    try {
+      const event = stripe.webhooks.constructEvent(
+        req.rawBody,
+        sig || '',
+        functions.config().stripe.webhook_secret
+      );
 
-    let subscription: Stripe.Subscription;
+      console.log('Processing webhook event:', event.type);
 
-    switch (event.type) {
-      case 'customer.subscription.created':
-      case 'customer.subscription.updated':
-        subscription = event.data.object as Stripe.Subscription;
-        await handleSubscriptionChange(subscription);
-        break;
-      
-      case 'customer.subscription.deleted':
-        subscription = event.data.object as Stripe.Subscription;
-        await handleSubscriptionDeletion(subscription);
-        break;
+      let subscription: Stripe.Subscription;
+      let session: Stripe.Checkout.Session;
+
+      switch (event.type) {
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated':
+          subscription = event.data.object as Stripe.Subscription;
+          await handleSubscriptionChange(subscription);
+          break;
+        
+        case 'customer.subscription.deleted':
+          subscription = event.data.object as Stripe.Subscription;
+          await handleSubscriptionDeletion(subscription);
+          break;
+
+        case 'checkout.session.completed':
+          session = event.data.object as Stripe.Checkout.Session;
+          await handleCheckoutSessionCompleted(session);
+          break;
+
+        default:
+          console.log(`Unhandled event type: ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error('Stripe webhook error:', error);
+      if (error instanceof Error) {
+        res.status(400).send(`Webhook Error: ${error.message}`);
+      } else {
+        res.status(400).send('Webhook Error: Unknown error occurred');
+      }
     }
-
-    res.json({ received: true });
-  } catch (error) {
-    console.error('Stripe webhook error:', error);
-    if (error instanceof Error) {
-      res.status(400).send(`Webhook Error: ${error.message}`);
-    } else {
-      res.status(400).send('Webhook Error: Unknown error occurred');
-    }
-  }
+  });
 });
 
 // OpenAI Translation Function
@@ -136,6 +225,24 @@ export const translateText = functions.https.onCall(async (request: CallableRequ
 });
 
 // Helper Functions
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+  const customerId = session.customer as string;
+  const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer;
+  const userId = customer.metadata?.firebaseUID;
+
+  if (!userId) {
+    console.error('No Firebase UID found in customer metadata');
+    return;
+  }
+
+  // Update user's subscription status
+  await admin.firestore().collection('users').doc(userId).update({
+    'subscription.status': 'active',
+    'subscription.plan': session.metadata?.priceId || null,
+    'subscription.current_period_end': Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30 days from now
+  });
+}
+
 async function handleSubscriptionChange(subscription: Stripe.Subscription) {
   const customer = await stripe.customers.retrieve(subscription.customer as string) as Stripe.Customer;
   const userId = customer.metadata?.firebaseUID;
@@ -167,3 +274,34 @@ async function handleSubscriptionDeletion(subscription: Stripe.Subscription) {
     'subscription.current_period_end': null,
   });
 }
+
+// Create portal session
+export const createPortalSession = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'The function must be called while authenticated.'
+    );
+  }
+
+  try {
+    const { customerId } = data;
+    if (!customerId) {
+      throw new functions.https.HttpsError('invalid-argument', 'Customer ID is required');
+    }
+
+    // Create a billing portal session
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: `${process.env.VITE_APP_URL || 'https://app-store-translate.pages.dev'}/settings`
+    });
+
+    return { url: session.url };
+  } catch (error) {
+    console.error('Error creating portal session:', error);
+    throw new functions.https.HttpsError(
+      'internal',
+      error instanceof Error ? error.message : 'Failed to create portal session'
+    );
+  }
+});

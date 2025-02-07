@@ -1,10 +1,21 @@
 import { loadStripe } from '@stripe/stripe-js';
+import { auth, db, functions } from '../../services/firebase';
+import { getDoc, doc } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 
 // Initialize Stripe with your publishable key
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
-// API base URL
-const API_BASE_URL = import.meta.env.VITE_DEV_MODE ? 'http://localhost:3000' : import.meta.env.VITE_APP_URL;
+// Firebase Functions base URL
+const FUNCTIONS_BASE_URL = 'https://us-central1-reachmix.cloudfunctions.net';
+
+// Stripe API endpoints
+const STRIPE_ENDPOINTS = {
+  createCheckoutSession: `${FUNCTIONS_BASE_URL}/createCheckoutSession`,
+  createPortalSession: `${FUNCTIONS_BASE_URL}/createPortalSession`,
+  subscriptionStatus: `${FUNCTIONS_BASE_URL}/subscriptionStatus`,
+  cancellationFeedback: `${FUNCTIONS_BASE_URL}/cancellationFeedback`
+};
 
 export class StripeService {
   // Create a checkout session for subscription
@@ -12,7 +23,7 @@ export class StripeService {
     try {
       console.log('Creating checkout session with priceId:', priceId);
       
-      const response = await fetch(`${API_BASE_URL}/api/stripe/create-checkout-session`, {
+      const response = await fetch(`${FUNCTIONS_BASE_URL}${STRIPE_ENDPOINTS.createCheckoutSession}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,7 +70,7 @@ export class StripeService {
   // Get subscription status
   static async getSubscriptionStatus(): Promise<string> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/stripe/subscription-status`);
+      const response = await fetch(`${FUNCTIONS_BASE_URL}${STRIPE_ENDPOINTS.subscriptionStatus}`);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -82,22 +93,65 @@ export class StripeService {
   // Create and redirect to customer portal
   static async redirectToCustomerPortal(): Promise<void> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/stripe/create-portal-session`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Get current user's customer ID from Firebase
+      const user = auth.currentUser;
+      if (!user) {
+        console.error('No authenticated user found');
+        throw new Error('Please sign in to manage your subscription');
+      }
+      
+      console.log('Getting user document for:', user.uid);
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      
+      if (!userDoc.exists()) {
+        console.error('User document not found for:', user.uid);
+        throw new Error('User profile not found. Please try signing out and back in');
+      }
+      
+      const userData = userDoc.data();
+      console.log('User data retrieved:', { email: userData?.email, hasStripeId: !!userData?.stripeCustomerId });
+      
+      let customerId = userData?.stripeCustomerId;
+      
+      // If no customer ID exists, create one
+      if (!customerId) {
+        console.log('No Stripe customer ID found, creating one...');
+        try {
+          const createStripeCustomer = httpsCallable(functions, 'createStripeCustomer');
+          const result = await createStripeCustomer();
+          
+          if (!result.data || !(result.data as any).customerId) {
+            console.error('Invalid response from createStripeCustomer:', result);
+            throw new Error('Failed to create customer profile. Please contact support');
+          }
+          
+          customerId = (result.data as any).customerId;
+          console.log('Successfully created Stripe customer:', customerId);
+        } catch (error) {
+          console.error('Error creating Stripe customer:', error);
+          if (error instanceof Error) {
+            throw new Error(`Failed to create customer profile: ${error.message}`);
+          }
+          throw new Error('Failed to create customer profile. Please try again later');
         }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
-      const { url } = await response.json();
+      console.log('Creating portal session for customer:', customerId);
+      
+      // Use Firebase Functions directly instead of REST API
+      const createPortalSession = httpsCallable(functions, 'createPortalSession');
+      const result = await createPortalSession({ customerId });
+      
+      if (!result.data || !(result.data as any).url) {
+        console.error('Invalid response from createPortalSession:', result);
+        throw new Error('Failed to create portal session. Please try again later');
+      }
+      
+      const { url } = result.data as { url: string };
+      console.log('Redirecting to portal URL');
       window.location.href = url;
     } catch (error) {
-      console.error('Error redirecting to customer portal:', error);
+      console.error('Error in redirectToCustomerPortal:', error);
       throw error;
     }
   }
@@ -105,7 +159,7 @@ export class StripeService {
   // Submit cancellation feedback
   static async submitCancellationFeedback(reason: string, feedback: string): Promise<void> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/stripe/cancellation-feedback`, {
+      const response = await fetch(`${FUNCTIONS_BASE_URL}${STRIPE_ENDPOINTS.cancellationFeedback}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
