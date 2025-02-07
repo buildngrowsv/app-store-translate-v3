@@ -8,14 +8,16 @@ interface CheckoutButtonProps {
   priceId: string;
   planName: string;
   className?: string;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'outline' | 'gradient' | 'destructive';
+  children?: React.ReactNode;
 }
 
 export const CheckoutButton: React.FC<CheckoutButtonProps> = ({
   priceId,
   planName,
   className,
-  variant = 'primary'
+  variant = 'primary',
+  children
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { trackSubscription } = useAnalytics();
@@ -46,7 +48,7 @@ export const CheckoutButton: React.FC<CheckoutButtonProps> = ({
       className={className}
       variant={variant}
     >
-      {isLoading ? 'Processing...' : `Subscribe to ${planName}`}
+      {isLoading ? 'Processing...' : children || `Subscribe to ${planName}`}
     </Button>
   );
 }; 

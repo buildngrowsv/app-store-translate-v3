@@ -57,21 +57,44 @@ export const en = {
       title: "Simple, Transparent Pricing",
       starter: {
         title: "Starter",
-        price: "49",
+        price: "$29",
+        originalPrice: "$49",
         description: "Perfect for individual developers",
-        features: ["1 Project", "All Features", "3 Languages in Trial"]
+        features: [
+          "10 Projects",
+          "Up to 10 languages",
+          "Basic ASO optimization",
+          "Standard support",
+          "Monthly updates"
+        ]
       },
       growth: {
         title: "Pro",
-        price: "79",
+        price: "$79",
+        originalPrice: "$129",
         description: "Ideal for growing businesses",
-        features: ["Up to 25 languages", "Advanced ASO optimization", "Priority Support", "Weekly updates", "Custom keywords"]
+        features: [
+          "25 Projects",
+          "Up to 25 languages",
+          "Advanced ASO optimization",
+          "Priority Support",
+          "Weekly updates",
+          "Custom keywords"
+        ]
       },
       enterprise: {
         title: "Enterprise",
         price: "Contact Us",
         description: "For larger organizations",
-        features: ["Unlimited Projects", "Custom Solutions", "Dedicated Support"]
+        features: [
+          "Unlimited Projects",
+          "Unlimited languages",
+          "Premium ASO optimization",
+          "Dedicated Support",
+          "Daily updates",
+          "Custom integration",
+          "API access"
+        ]
       }
     }
   }

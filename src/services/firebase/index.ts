@@ -16,6 +16,7 @@ import {
   setDoc,
   getDoc,
   updateDoc,
+  deleteDoc,
   query,
   where,
   getDocs,
@@ -227,6 +228,36 @@ export class FirebaseService {
       });
     } catch (error) {
       console.error('Error updating subscription:', error);
+      throw error;
+    }
+  }
+
+  // Delete project
+  static async deleteProject(projectId: string): Promise<void> {
+    try {
+      // Get project to check user ID
+      const projectDoc = await getDoc(doc(projectsCollection, projectId));
+      if (!projectDoc.exists()) {
+        throw new Error('Project not found');
+      }
+
+      const projectData = projectDoc.data();
+      const userId = projectData.userId;
+
+      // Delete project document
+      await deleteDoc(doc(projectsCollection, projectId));
+
+      // Update user's projects array
+      const userRef = doc(usersCollection, userId);
+      const userData = await getDoc(userRef);
+      if (userData.exists()) {
+        const projects = userData.data().projects || [];
+        await updateDoc(userRef, {
+          projects: projects.filter((id: string) => id !== projectId)
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting project:', error);
       throw error;
     }
   }

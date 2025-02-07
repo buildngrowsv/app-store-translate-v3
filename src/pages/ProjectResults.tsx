@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { openaiService } from '../services/openai/index';
 import { ResultsView } from '../components/results/ResultsView';
-import { openaiService } from '../services/openai';
 import { FirebaseService } from '../services/firebase';
 import { DocumentData } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
@@ -25,6 +25,7 @@ export const ProjectResults: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processingError, setProcessingError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -49,7 +50,6 @@ export const ProjectResults: React.FC = () => {
           type: projectData.type,
           languages: projectData.languages || [],
           lastUpdated: projectData.lastUpdated,
-          // Only include results if they are completed or in-progress
           results: projectData.results?.status === 'error' || !projectData.results
             ? undefined
             : {
@@ -61,12 +61,14 @@ export const ProjectResults: React.FC = () => {
         setProject(project);
         console.log('Current project:', project);
         
-        if (project.results?.status === 'in-progress') {
+        // Only process if no results exist or if they're in-progress and not already processing
+        if ((!project.results || project.results.status === 'in-progress') && !isProcessing) {
+          console.log('Processing project as no results exist or in-progress');
           processProject(project);
-        } else if (projectData.results?.status === 'error') {
-          setProcessingError(projectData.results.error || 'An error occurred while processing your project');
+        } else {
+          console.log('Project already has results or is being processed:', project.results);
+          setIsLoading(false);
         }
-        setIsLoading(false);
       } catch (error) {
         console.error('Error fetching project:', error);
         setError('Failed to load project');
@@ -75,20 +77,35 @@ export const ProjectResults: React.FC = () => {
     };
 
     fetchProject();
-  }, [user, id, navigate]);
+  }, [user, id, navigate, isProcessing]);
 
   const processProject = async (project: BaseProject) => {
+    if (isProcessing) {
+      console.log('Already processing, skipping duplicate call');
+      return;
+    }
+
     console.log('Starting project processing:', project);
     setProcessingError(null);
+    setIsProcessing(true);
     
     try {
+      // Update project status to in-progress
+      await FirebaseService.updateProject(project.id, {
+        results: {
+          status: 'in-progress'
+        }
+      });
+
+      // Process with Worker
       const results = await openaiService.processProject(project);
       console.log('Project processing results:', results);
       
+      // Update project with results
       await FirebaseService.updateProject(project.id, { 
         results: {
           status: 'completed',
-          data: results
+          data: results.data
         }
       });
 
@@ -96,11 +113,10 @@ export const ProjectResults: React.FC = () => {
         ...prev, 
         results: {
           status: 'completed',
-          data: results
+          data: results.data
         }
       } : null);
       
-      setIsLoading(false);
     } catch (error) {
       console.error('Failed to process project:', error);
       
@@ -113,7 +129,9 @@ export const ProjectResults: React.FC = () => {
 
       setProcessingError('Failed to process project. Please try again.');
       setProject(prev => prev ? { ...prev, results: undefined } : null);
+    } finally {
       setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 

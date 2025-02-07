@@ -1,15 +1,15 @@
 {
-  "name": "vite-react-typescript-starter",
+  "name": "app-store-translate",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "server": "node server.js",
-    "dev:all": "concurrently \"npm run dev\" \"npm run server\""
+    "pages:dev": "wrangler pages dev --compatibility-date=2024-03-15 -- npm run dev",
+    "pages:deploy": "npm run build && wrangler pages deploy ./dist"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^3.1.1",
@@ -17,6 +17,7 @@
     "body-parser": "^1.20.3",
     "clsx": "^2.1.0",
     "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "firebase": "^11.2.0",
@@ -31,6 +32,7 @@
     "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240208.0",
     "@eslint/js": "^9.9.1",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
@@ -45,6 +47,7 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
-    "vite": "^5.4.2"
+    "vite": "^5.4.2",
+    "wrangler": "^3.34.2"
   }
 }

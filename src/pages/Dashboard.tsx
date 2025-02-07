@@ -10,8 +10,12 @@ interface Project {
   name: string;
   description: string;
   lastUpdated: string;
-  status: string;
   type: 'enhancement' | 'translation';
+  results?: {
+    status: 'in-progress' | 'completed' | 'error';
+    data?: any;
+    error?: string;
+  };
 }
 
 interface UserData {
@@ -52,7 +56,8 @@ export const Dashboard: React.FC = () => {
             description: data.description,
             lastUpdated: data.lastUpdated,
             status: data.status,
-            type: data.type as 'enhancement' | 'translation'
+            type: data.type as 'enhancement' | 'translation',
+            results: data.results
           }));
 
         setProjects(validProjects);
@@ -68,6 +73,18 @@ export const Dashboard: React.FC = () => {
 
   const handleNewProject = () => {
     navigate('/dashboard/new');
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    try {
+      // Delete project from Firebase
+      await FirebaseService.deleteProject(projectId);
+      
+      // Update local state
+      setProjects(projects.filter(p => p.id !== projectId));
+    } catch (error) {
+      console.error('Error deleting project:', error);
+    }
   };
 
   if (loading) {
@@ -100,7 +117,9 @@ export const Dashboard: React.FC = () => {
             title={project.name}
             description={project.description}
             lastUpdated={project.lastUpdated}
+            status={project.results?.status}
             onClick={() => navigate(`/dashboard/project/${project.id}/results`)}
+            onDelete={() => handleDeleteProject(project.id)}
           />
         ))}
       </div>

@@ -36,9 +36,10 @@ export const Terms: React.FC = () => {
             The free trial includes:
           </p>
           <ul className="list-disc pl-6 space-y-2">
-            <li>Translation into up to 3 languages</li>
-            <li>Basic optimization features</li>
-            <li>Limited-time access to all features</li>
+            <li>Up to 3 projects</li>
+            <li>Translation into up to 3 languages per project</li>
+            <li>Basic ASO optimization features</li>
+            <li>14-day access to basic features</li>
           </ul>
         </section>
 
@@ -48,9 +49,33 @@ export const Terms: React.FC = () => {
             Subscription plans and billing:
           </p>
           <ul className="list-disc pl-6 space-y-2">
-            <li>Starter: $29/month - Up to 10 languages</li>
-            <li>Pro: $79/month - Up to 25 languages</li>
-            <li>Enterprise: Custom pricing - Unlimited languages</li>
+            <li>Starter: $29/month
+              <ul className="pl-6 mt-2">
+                <li>Up to 10 projects</li>
+                <li>Up to 10 languages per project</li>
+                <li>Basic ASO optimization</li>
+                <li>Standard support</li>
+              </ul>
+            </li>
+            <li>Pro: $79/month
+              <ul className="pl-6 mt-2">
+                <li>Up to 25 projects</li>
+                <li>Up to 25 languages per project</li>
+                <li>Advanced ASO optimization</li>
+                <li>Priority support</li>
+                <li>Custom keywords</li>
+              </ul>
+            </li>
+            <li>Enterprise: Custom pricing
+              <ul className="pl-6 mt-2">
+                <li>Unlimited projects</li>
+                <li>Unlimited languages</li>
+                <li>Premium ASO optimization</li>
+                <li>Dedicated support</li>
+                <li>Custom integration</li>
+                <li>API access</li>
+              </ul>
+            </li>
           </ul>
           <p className="mt-4">
             Subscriptions are billed in advance on a monthly basis. You can cancel your subscription at any time.

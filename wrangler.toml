@@ -1,0 +1,17 @@
+name = "reachmix-openai"
+main = "./functions/openai.ts"
+compatibility_date = "2024-03-15"
+
+# Worker configuration
+workers_dev = true
+
+[vars]
+ENVIRONMENT = "development"
+
+# Production environment
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+# Development environment  
+[env.development]
+vars = { ENVIRONMENT = "development" } 
