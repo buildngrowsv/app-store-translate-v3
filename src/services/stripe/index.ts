@@ -51,8 +51,18 @@ export class StripeService {
       const stripe = await stripePromise;
       if (!stripe) throw new Error('Stripe not initialized');
 
-      console.log('Redirecting to checkout with priceId:', priceId);
-      const sessionId = await this.createCheckoutSession(priceId);
+      console.log('Creating checkout session for price:', priceId);
+      
+      // Use Firebase Function to create checkout session
+      const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
+      const result = await createCheckoutSession({ priceId });
+      
+      if (!result.data || !(result.data as any).sessionId) {
+        console.error('Invalid response from createCheckoutSession:', result);
+        throw new Error('Failed to create checkout session. Please try again later');
+      }
+
+      const { sessionId } = result.data as { sessionId: string };
       console.log('Got session ID:', sessionId);
 
       const { error } = await stripe.redirectToCheckout({ sessionId });

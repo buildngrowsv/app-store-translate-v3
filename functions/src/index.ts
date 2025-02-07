@@ -305,3 +305,83 @@ export const createPortalSession = functions.https.onCall(async (data, context) 
     );
   }
 });
+
+// Create checkout session for subscription
+export const createCheckoutSession = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'The function must be called while authenticated.'
+    );
+  }
+
+  try {
+    const { priceId } = data;
+    if (!priceId) {
+      throw new functions.https.HttpsError('invalid-argument', 'Price ID is required');
+    }
+
+    // Get user's customer ID
+    const userId = context.auth.uid;
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+    
+    if (!userDoc.exists) {
+      throw new functions.https.HttpsError('not-found', 'User document not found');
+    }
+
+    const userData = userDoc.data();
+    let customerId = userData?.stripeCustomerId;
+
+    // If no customer ID exists, create one
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: context.auth.token.email || undefined,
+        metadata: {
+          firebaseUID: userId
+        }
+      });
+      customerId = customer.id;
+      
+      // Update user document with Stripe customer ID
+      await admin.firestore().collection('users').doc(userId).update({
+        stripeCustomerId: customer.id
+      });
+    }
+
+    // Create checkout session
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+      mode: 'subscription',
+      line_items: [{
+        price: priceId,
+        quantity: 1,
+      }],
+      success_url: `${process.env.VITE_APP_URL || 'https://app-store-translate.pages.dev'}/settings?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.VITE_APP_URL || 'https://app-store-translate.pages.dev'}/settings`,
+      metadata: {
+        firebaseUID: userId,
+        priceId: priceId
+      },
+      allow_promotion_codes: true,
+      billing_address_collection: 'required',
+      customer_update: {
+        address: 'auto'
+      },
+      subscription_data: {
+        metadata: {
+          firebaseUID: userId,
+          priceId: priceId
+        }
+      }
+    });
+
+    return { sessionId: session.id };
+  } catch (error) {
+    console.error('Error creating checkout session:', error);
+    throw new functions.https.HttpsError(
+      'internal',
+      error instanceof Error ? error.message : 'Failed to create checkout session'
+    );
+  }
+});

@@ -18,6 +18,10 @@ At the top of each file, include a comment with the following:
 
 As you go, implement animations and transitions.
 
+Also add beautiful elegant UI loading animations. Especially for the home screen, let's trigger animations as the user scrolls. Use elegant blur animations and effects as well.
+
+Add elegant animated glows to components and text where it makes sense that change with dark vs light mode. For colored glows, add gradients.
+
 Implement beautiful design.
 
 Implement a dark and light theme and auto switching based on device settings.
