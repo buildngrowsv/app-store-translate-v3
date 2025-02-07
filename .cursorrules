@@ -1,7 +1,33 @@
+Current objective:
+
+Get Stripe working. Switch whole website to dark mode.
+
+
+ALWAYS start with the following:
+
+- Pull the folder tree with “tree -L 3”
+- ALWAYS perform multiple search and read of files until you understand the codebase, do not rely on your existing context.
+
+Include copious comments throughout the codebase.
+
+At the top of each file, include a comment with the following:
+- File name
+- Description of the file
+- Details of what it does and how it interacts and relies on other files and external resources
+- Date
+
 As you go, implement animations and transitions.
 
 Implement beautiful design.
 
 Implement a dark and light theme and auto switching based on device settings.
 
-Do not use solid colors. 3-color gradients are preferred.
+Use gradients, not solid colors. 3-color gradients. Use beautiful icons.
+
+Create a documentation folder and put .md files in it for documentation as you make plans.
+
+Use debug(n).md files when you are debugging to keep track as yo ugo.
+
+Make the product feel easy and fun to use.
+
+Make the product look expensive and polished as you go.
