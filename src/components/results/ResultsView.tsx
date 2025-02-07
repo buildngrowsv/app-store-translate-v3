@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Copy, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Copy, Check, Download } from 'lucide-react';
 import { Button } from '../Button';
 import { GeneratedContent, TranslatedContent } from '../../services/openai/types';
 
@@ -35,6 +35,38 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ type, data, onSave }) 
     setTimeout(() => setCopyStatus(null), 2000);
   };
 
+  const handleExportCSV = () => {
+    let csvContent = '';
+    const timestamp = new Date().toISOString().split('T')[0];
+    let filename = '';
+
+    if (type === 'enhance' && 'titles' in data) {
+      // For enhancement results
+      csvContent = 'Version,Title,Description\n';
+      data.titles.forEach((title, index) => {
+        csvContent += `${index + 1},"${title.replace(/"/g, '""')}","${data.descriptions[index].replace(/"/g, '""')}"\n`;
+      });
+      filename = `enhancement-results-${timestamp}.csv`;
+    } else if (type === 'translate' && 'translations' in data) {
+      // For translation results
+      csvContent = 'Language,Title,Description\n';
+      data.translations.forEach((translation) => {
+        csvContent += `${translation.language},"${translation.title.replace(/"/g, '""')}","${translation.description.replace(/"/g, '""')}"\n`;
+      });
+      filename = `translation-results-${timestamp}.csv`;
+    }
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href); // Clean up the URL object
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       {type === 'translate' && 'translations' in data && (
@@ -47,6 +79,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ type, data, onSave }) 
                        focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
             value={selectedLanguage}
             onChange={(e) => setSelectedLanguage(e.target.value)}
+            aria-label="Select language"
           >
             {data.translations.map((t) => (
               <option key={t.language} value={t.language}>
@@ -68,6 +101,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ type, data, onSave }) 
                 className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50"
                 onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
                 disabled={currentIndex === 0}
+                aria-label="Previous version"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -78,6 +112,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ type, data, onSave }) 
                 className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50"
                 onClick={() => setCurrentIndex((i) => Math.min(data.titles.length - 1, i + 1))}
                 disabled={currentIndex === data.titles.length - 1}
+                aria-label="Next version"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -90,6 +125,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ type, data, onSave }) 
                          focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
               value={content.title}
               readOnly
+              aria-label="Title"
             />
             <button
               className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-gray-600"
@@ -114,6 +150,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ type, data, onSave }) 
                          focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
               value={content.description}
               readOnly
+              aria-label="Description"
             />
             <button
               className="absolute right-2 top-2 p-2 text-gray-400 hover:text-gray-600"
@@ -129,7 +166,14 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ type, data, onSave }) 
         </div>
       </div>
 
-      <div className="mt-8 flex justify-end">
+      <div className="mt-8 flex justify-end space-x-4">
+        <Button 
+          onClick={handleExportCSV}
+          className="bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center gap-2"
+        >
+          <Download className="w-4 h-4" />
+          Export CSV
+        </Button>
         <Button onClick={onSave}>Save Changes</Button>
       </div>
     </div>

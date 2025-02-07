@@ -1,16 +1,15 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ES2020",
-    "lib": ["ES2020"],
-    "types": ["@cloudflare/workers-types"],
-    "moduleResolution": "node",
+    "module": "commonjs",
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "outDir": "lib",
+    "sourceMap": true,
     "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "isolatedModules": true
+    "target": "es2017"
   },
-  "include": ["**/*.ts"],
-  "exclude": ["node_modules"]
-} 
+  "compileOnSave": true,
+  "include": [
+    "src"
+  ]
+}
