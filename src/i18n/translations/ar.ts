@@ -4,7 +4,13 @@ export const ar = {
       title: "حوّل تواجدك في متجر التطبيقات عالمياً",
       subtitle: "أنشئ أوصافاً جذابة للتطبيقات، حسّن لـ ASO، واصل إلى جمهور عالمي مع ترجمات فورية",
       startTrial: "ابدأ النسخة التجريبية المجانية",
-      login: "تسجيل الدخول"
+      login: "تسجيل الدخول",
+      translateInto: "ترجم تطبيقك إلى",
+      aiTranslation: "ترجمة مدعومة بالذكاء الاصطناعي",
+      aiTranslationDesc: "ترجم محتوى تطبيقك فورياً إلى أكثر من 50 لغة مع الحفاظ على السياق والنبرة",
+      asoOptimization: "تحسين ASO",
+      asoOptimizationDesc: "عزز الظهور باستخدام كلمات مفتاحية محلية وقوائم متجر محسنة",
+      startTranslating: "ابدأ الترجمة الآن"
     },
     features: {
       aiTitle: "أوصاف مدعومة بالذكاء الاصطناعي",
@@ -73,6 +79,21 @@ export const ar = {
         description: "للمؤسسات الكبيرة",
         features: ["مشاريع غير محدودة", "حلول مخصصة", "دعم مخصص"]
       }
+    },
+    footer: {
+      company: "ReachMix",
+      tagline: "حوّل تواجد تطبيقك عالمياً",
+      companyLinks: "الشركة",
+      about: "عن الشركة",
+      privacy: "سياسة الخصوصية",
+      terms: "شروط الاستخدام",
+      resources: "الموارد",
+      blog: "المدونة",
+      documentation: "التوثيق",
+      contact: "اتصل بنا",
+      getInTouch: "تواصل معنا",
+      support: "الدعم",
+      copyright: "© {year} ReachMix. جميع الحقوق محفوظة."
     }
   }
 };

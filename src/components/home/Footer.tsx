@@ -56,32 +56,32 @@ export const Footer: React.FC<FooterProps> = ({ lang = 'english' }) => {
               "dark:from-purple-500 dark:to-pink-500",
               "bg-clip-text text-transparent"
             )}>
-              ReachMix
+              {t.home.footer.company}
             </h3>
             <p className="text-gray-400 dark:text-gray-500">
-              Transform your app's global presence
+              {t.home.footer.tagline}
             </p>
           </div>
 
           {/* Company Links */}
           <div>
             <h4 className="text-white dark:text-gray-200 font-bold mb-4">
-              Company
+              {t.home.footer.companyLinks}
             </h4>
             <ul className="space-y-2">
               <li>
                 <Link to="/about" className={linkClasses}>
-                  About
+                  {t.home.footer.about}
                 </Link>
               </li>
               <li>
                 <Link to="/privacy" className={linkClasses}>
-                  Privacy Policy
+                  {t.home.footer.privacy}
                 </Link>
               </li>
               <li>
                 <Link to="/terms" className={linkClasses}>
-                  Terms of Use
+                  {t.home.footer.terms}
                 </Link>
               </li>
             </ul>
@@ -90,17 +90,17 @@ export const Footer: React.FC<FooterProps> = ({ lang = 'english' }) => {
           {/* Resources Links */}
           <div>
             <h4 className="text-white dark:text-gray-200 font-bold mb-4">
-              Resources
+              {t.home.footer.resources}
             </h4>
             <ul className="space-y-2">
               <li>
                 <Link to="/blog" className={linkClasses}>
-                  Blog
+                  {t.home.footer.blog}
                 </Link>
               </li>
               <li>
                 <Link to="/docs" className={linkClasses}>
-                  Documentation
+                  {t.home.footer.documentation}
                 </Link>
               </li>
             </ul>
@@ -109,17 +109,17 @@ export const Footer: React.FC<FooterProps> = ({ lang = 'english' }) => {
           {/* Contact Links */}
           <div>
             <h4 className="text-white dark:text-gray-200 font-bold mb-4">
-              Contact
+              {t.home.footer.contact}
             </h4>
             <ul className="space-y-2">
               <li>
                 <Link to="/contact" className={linkClasses}>
-                  Get in Touch
+                  {t.home.footer.getInTouch}
                 </Link>
               </li>
               <li>
                 <Link to="/support" className={linkClasses}>
-                  Support
+                  {t.home.footer.support}
                 </Link>
               </li>
             </ul>
@@ -129,7 +129,7 @@ export const Footer: React.FC<FooterProps> = ({ lang = 'english' }) => {
         {/* Copyright */}
         <div className="mt-12 pt-8 border-t border-gray-800 dark:border-gray-700">
           <p className="text-center text-gray-400 dark:text-gray-500">
-            © {new Date().getFullYear()} ReachMix. All rights reserved.
+            {t.home.footer.copyright.replace('{year}', new Date().getFullYear().toString())}
           </p>
         </div>
       </div>

@@ -4,7 +4,13 @@ export const ko = {
       title: "앱 스토어 존재감을 글로벌하게 변화시키세요",
       subtitle: "매력적인 앱 설명을 생성하고, ASO를 최적화하며, 즉각적인 번역으로 전 세계 사용자에게 도달하세요",
       startTrial: "무료 체험 시작하기",
-      login: "로그인"
+      login: "로그인",
+      translateInto: "앱을 다음 언어로 번역",
+      aiTranslation: "AI 기반 번역",
+      aiTranslationDesc: "앱 콘텐츠를 50개 이상의 언어로 즉시 번역하며 문맥과 톤을 유지",
+      asoOptimization: "ASO 최적화",
+      asoOptimizationDesc: "현지화된 키워드와 최적화된 스토어 리스팅으로 가시성 향상",
+      startTranslating: "지금 바로 번역 시작"
     },
     features: {
       aiTitle: "AI 기반 설명",
@@ -73,6 +79,21 @@ export const ko = {
         description: "대규모 조직을 위한",
         features: ["무제한 프로젝트", "맞춤형 솔루션", "전담 지원"]
       }
+    },
+    footer: {
+      company: "ReachMix",
+      tagline: "앱의 글로벌 프레젠스를 혁신하세요",
+      companyLinks: "회사",
+      about: "회사 소개",
+      privacy: "개인정보 처리방침",
+      terms: "이용약관",
+      resources: "리소스",
+      blog: "블로그",
+      documentation: "문서",
+      contact: "문의하기",
+      getInTouch: "연락하기",
+      support: "고객지원",
+      copyright: "© {year} ReachMix. 모든 권리 보유."
     }
   }
 };

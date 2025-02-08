@@ -4,7 +4,13 @@ export const nl = {
       title: "Transformeer Je App Store Aanwezigheid Wereldwijd",
       subtitle: "Genereer overtuigende app-beschrijvingen, optimaliseer voor ASO en bereik een wereldwijd publiek met directe vertalingen",
       startTrial: "Start Gratis Proefperiode",
-      login: "Inloggen"
+      login: "Inloggen",
+      translateInto: "Vertaal je app naar",
+      aiTranslation: "AI-Aangedreven Vertaling",
+      aiTranslationDesc: "Vertaal je app-content direct naar meer dan 50 talen met behoud van context en toon",
+      asoOptimization: "ASO-Optimalisatie",
+      asoOptimizationDesc: "Verbeter zichtbaarheid met gelokaliseerde zoekwoorden en geoptimaliseerde store-vermeldingen",
+      startTranslating: "Begin Nu met Vertalen"
     },
     features: {
       aiTitle: "AI-Aangedreven Beschrijvingen",
@@ -73,6 +79,21 @@ export const nl = {
         description: "Voor grotere organisaties",
         features: ["Onbeperkte Projecten", "Aangepaste Oplossingen", "Toegewijde Ondersteuning"]
       }
+    },
+    footer: {
+      company: "ReachMix",
+      tagline: "Transformeer uw wereldwijde App Store aanwezigheid",
+      companyLinks: "Bedrijf",
+      about: "Over ons",
+      privacy: "Privacybeleid",
+      terms: "Gebruiksvoorwaarden",
+      resources: "Bronnen",
+      blog: "Blog",
+      documentation: "Documentatie",
+      contact: "Contact",
+      getInTouch: "Neem contact op",
+      support: "Ondersteuning",
+      copyright: "© {year} ReachMix. Alle rechten voorbehouden."
     }
   }
 };

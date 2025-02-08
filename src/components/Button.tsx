@@ -29,6 +29,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           'disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]',
           'before:absolute before:inset-0 before:rounded-xl before:transition-all before:duration-200',
           
+          // Size variations
+          {
+            'text-sm px-6 py-2.5 h-10 gap-1.5': size === 'sm',
+            'text-base px-8 py-3 h-12 gap-2': size === 'md',
+            'text-lg px-10 py-4 h-14 gap-2.5': size === 'lg',
+          },
+          
           // Variant styles
           {
             // Gradient variant
@@ -39,8 +46,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 before:opacity-0 hover:before:opacity-100 before:bg-black/10 shadow-md hover:shadow-lg dark:shadow-blue-900/30':
               variant === 'primary',
             
-            // Secondary variant
-            'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm':
+            // Secondary variant - Updated for better dark mode
+            'bg-white/10 dark:bg-white/5 text-white border border-white/10 hover:bg-white/20 dark:hover:bg-white/10 backdrop-blur-sm':
               variant === 'secondary',
             
             // Outline variant
@@ -50,11 +57,6 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             // Destructive variant
             'bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 text-white hover:from-red-700 hover:via-rose-700 hover:to-pink-700 before:opacity-0 hover:before:opacity-100 before:bg-black/10 shadow-md hover:shadow-lg dark:shadow-red-900/30':
               variant === 'destructive',
-            
-            // Size styles
-            'text-sm px-4 py-2 h-9': size === 'sm',
-            'text-base px-6 py-2.5 h-11': size === 'md',
-            'text-lg px-8 py-3 h-14': size === 'lg',
           },
           className
         )}

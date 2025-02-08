@@ -31,6 +31,12 @@ interface TranslationHero {
   subtitle: string;
   startTrial: string;
   login: string;
+  translateInto: string;
+  aiTranslation: string;
+  aiTranslationDesc: string;
+  asoOptimization: string;
+  asoOptimizationDesc: string;
+  startTranslating: string;
 }
 
 interface TranslationFeatures {

@@ -21,7 +21,7 @@ interface FeatureCardProps {
 export const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) => (
   <div className={cn(
     // Base styles
-    "group p-8 rounded-xl transition-all duration-300",
+    "group h-full flex flex-col p-8 rounded-xl transition-all duration-300",
     "transform hover:-translate-y-1",
     
     // Background and border
@@ -35,6 +35,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, descripti
     // Backdrop blur for depth
     "backdrop-blur-sm"
   )}>
+    {/* Icon container */}
     <div className={cn(
       // Icon container styles
       "mb-6 p-4 rounded-xl",
@@ -46,6 +47,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, descripti
       
       // Container layout
       "inline-flex items-center justify-center",
+      "w-16 h-16", // Fixed size for consistency
       
       // Glow effect
       "relative",
@@ -62,16 +64,20 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, descripti
         )
       })}
     </div>
-    <h3 className={cn(
-      "text-xl font-bold mb-3",
-      "bg-gradient-to-r from-purple-600 to-pink-600",
-      "dark:from-purple-400 dark:to-pink-400",
-      "bg-clip-text text-transparent"
-    )}>
-      {title}
-    </h3>
-    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-      {description}
-    </p>
+
+    {/* Content container with flex-grow to push content to full height */}
+    <div className="flex flex-col flex-grow">
+      <h3 className={cn(
+        "text-xl font-bold mb-3",
+        "bg-gradient-to-r from-purple-600 to-pink-600",
+        "dark:from-purple-400 dark:to-pink-400",
+        "bg-clip-text text-transparent"
+      )}>
+        {title}
+      </h3>
+      <p className="text-gray-600 dark:text-gray-300 leading-relaxed flex-grow">
+        {description}
+      </p>
+    </div>
   </div>
 );

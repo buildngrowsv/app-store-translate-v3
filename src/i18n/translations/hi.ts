@@ -73,6 +73,21 @@ export const hi = {
         description: "बड़े संगठनों के लिए",
         features: ["असीमित प्रोजेक्ट", "कस्टम समाधान", "समर्पित सहायता"]
       }
+    },
+    footer: {
+      company: "ReachMix",
+      tagline: "अपनी ऐप स्टोर उपस्थिति को वैश्विक स्तर पर बदलें",
+      companyLinks: "कंपनी",
+      about: "हमारे बारे में",
+      privacy: "गोपनीयता नीति",
+      terms: "उपयोग की शर्तें",
+      resources: "संसाधन",
+      blog: "ब्लॉग",
+      documentation: "दस्तावेज़ीकरण",
+      contact: "संपर्क",
+      getInTouch: "संपर्क करें",
+      support: "सहायता",
+      copyright: "© {year} ReachMix. सर्वाधिकार सुरक्षित।"
     }
   }
 };

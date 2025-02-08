@@ -4,7 +4,13 @@ export const ja = {
       title: "アプリストアのプレゼンスをグローバルに変革",
       subtitle: "魅力的なアプリの説明を生成し、ASOに最適化し、即時翻訳で世界中の視聴者にリーチ",
       startTrial: "無料トライアルを開始",
-      login: "ログイン"
+      login: "ログイン",
+      translateInto: "アプリを以下の言語に翻訳",
+      aiTranslation: "AI駆動の翻訳",
+      aiTranslationDesc: "アプリのコンテンツを50以上の言語に即時翻訳し、文脈とトーンを維持",
+      asoOptimization: "ASO最適化",
+      asoOptimizationDesc: "ローカライズされたキーワードと最適化されたストアリストで可視性を向上",
+      startTranslating: "今すぐ翻訳を開始"
     },
     features: {
       aiTitle: "AI駆動の説明文",
@@ -73,6 +79,21 @@ export const ja = {
         description: "大規模組織向け",
         features: ["無制限のプロジェクト", "カスタムソリューション", "専任サポート"]
       }
+    },
+    footer: {
+      company: "ReachMix",
+      tagline: "アプリのグローバルプレゼンスを変革する",
+      companyLinks: "会社情報",
+      about: "会社概要",
+      privacy: "プライバシーポリシー",
+      terms: "利用規約",
+      resources: "リソース",
+      blog: "ブログ",
+      documentation: "ドキュメント",
+      contact: "お問い合わせ",
+      getInTouch: "お問い合わせ",
+      support: "サポート",
+      copyright: "© {year} ReachMix. All rights reserved."
     }
   }
 };

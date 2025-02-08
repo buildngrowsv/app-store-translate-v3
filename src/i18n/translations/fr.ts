@@ -4,7 +4,13 @@ export const fr = {
       title: "Transformez Votre Présence sur l'App Store à l'Échelle Mondiale",
       subtitle: "Générez des descriptions d'applications convaincantes, optimisez pour l'ASO et atteignez un public mondial avec des traductions instantanées",
       startTrial: "Commencer l'Essai Gratuit",
-      login: "Connexion"
+      login: "Connexion",
+      translateInto: "Traduisez votre app en",
+      aiTranslation: "Traduction Alimentée par l'IA",
+      aiTranslationDesc: "Traduisez instantanément le contenu de votre application dans plus de 50 langues tout en préservant le contexte et le ton",
+      asoOptimization: "Optimisation ASO",
+      asoOptimizationDesc: "Augmentez la visibilité avec des mots-clés localisés et des fiches optimisées",
+      startTranslating: "Commencer la Traduction"
     },
     features: {
       aiTitle: "Descriptions Alimentées par l'IA",
@@ -73,6 +79,21 @@ export const fr = {
         description: "Pour les grandes organisations",
         features: ["Projets Illimités", "Solutions Personnalisées", "Support Dédié"]
       }
+    },
+    footer: {
+      company: "ReachMix",
+      tagline: "Transformez votre présence mondiale sur l'App Store",
+      companyLinks: "Entreprise",
+      about: "À propos",
+      privacy: "Politique de confidentialité",
+      terms: "Conditions d'utilisation",
+      resources: "Ressources",
+      blog: "Blog",
+      documentation: "Documentation",
+      contact: "Contact",
+      getInTouch: "Nous contacter",
+      support: "Support",
+      copyright: "© {year} ReachMix. Tous droits réservés."
     }
   }
 };

@@ -4,7 +4,13 @@ export const zh = {
       title: "全球化您的应用商店形象",
       subtitle: "生成引人入胜的应用描述，优化ASO，通过即时翻译触及全球用户",
       startTrial: "开始免费试用",
-      login: "登录"
+      login: "登录",
+      translateInto: "将您的应用翻译成",
+      aiTranslation: "AI驱动的翻译",
+      aiTranslationDesc: "即时将您的应用内容翻译成50多种语言，同时保持上下文和语气",
+      asoOptimization: "ASO优化",
+      asoOptimizationDesc: "通过本地化关键词和优化商店列表提升可见度",
+      startTranslating: "立即开始翻译"
     },
     features: {
       aiTitle: "AI驱动的描述",
@@ -73,6 +79,21 @@ export const zh = {
         description: "适合大型组织",
         features: ["无限项目", "定制解决方案", "专属支持"]
       }
+    },
+    footer: {
+      company: "ReachMix",
+      tagline: "改变您的应用在全球应用商店的影响力",
+      companyLinks: "公司",
+      about: "关于我们",
+      privacy: "隐私政策",
+      terms: "使用条款",
+      resources: "资源",
+      blog: "博客",
+      documentation: "文档",
+      contact: "联系我们",
+      getInTouch: "联系方式",
+      support: "技术支持",
+      copyright: "© {year} ReachMix. 保留所有权利。"
     }
   }
 };

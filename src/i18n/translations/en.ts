@@ -4,7 +4,13 @@ export const en = {
       title: "Transform Your App Store Presence Globally",
       subtitle: "Generate compelling app descriptions, optimize for ASO, and reach global audiences with instant translations",
       startTrial: "Start Free Trial",
-      login: "Login"
+      login: "Login",
+      translateInto: "Translate your app into",
+      aiTranslation: "AI-Powered Translation",
+      aiTranslationDesc: "Instantly translate your app content into 50+ languages while maintaining context and tone",
+      asoOptimization: "ASO Optimization",
+      asoOptimizationDesc: "Boost visibility with localized keywords and optimized store listings",
+      startTranslating: "Start Translating Now"
     },
     features: {
       aiTitle: "AI-Powered Descriptions",
@@ -96,6 +102,21 @@ export const en = {
           "API access"
         ]
       }
+    },
+    footer: {
+      company: "ReachMix",
+      tagline: "Transform your app's global presence",
+      companyLinks: "Company",
+      about: "About",
+      privacy: "Privacy Policy",
+      terms: "Terms of Use",
+      resources: "Resources",
+      blog: "Blog",
+      documentation: "Documentation",
+      contact: "Contact",
+      getInTouch: "Get in Touch",
+      support: "Support",
+      copyright: "© {year} ReachMix. All rights reserved."
     }
   }
 };

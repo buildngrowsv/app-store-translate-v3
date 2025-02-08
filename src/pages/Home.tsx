@@ -19,7 +19,9 @@ import { ComparisonSection } from '../components/home/ComparisonSection';
 import { StatsSection } from '../components/home/StatsSection';
 import { PricingSection } from '../components/home/PricingSection';
 import { Footer } from '../components/home/Footer';
+import { AuroraBackground } from '../components/AuroraBackground';
 import { cn } from '../lib/utils';
+import { LanguageAnimation } from '../components/LanguageAnimation';
 
 interface HomeProps {
   lang: Language;
@@ -32,81 +34,80 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 
-                      dark:from-blue-950/30 dark:via-indigo-950/30 dark:to-purple-950/30" />
+        {/* Dark gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900" />
         
-        {/* Background decorations */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Animated glow orbs */}
-          <div className="absolute -left-48 -top-48 w-96 h-96 
-                        bg-gradient-to-br from-purple-500/10 to-pink-500/10 
-                        dark:from-purple-500/5 dark:to-pink-500/5 
-                        rounded-full blur-3xl animate-pulse" />
-          <div className="absolute -right-48 -bottom-48 w-96 h-96 
-                        bg-gradient-to-br from-blue-500/10 to-purple-500/10 
-                        dark:from-blue-500/5 dark:to-purple-500/5 
-                        rounded-full blur-3xl animate-pulse" />
-          
-          {/* Additional floating orbs */}
-          <div className="absolute left-1/4 top-1/4 w-48 h-48 
-                        bg-gradient-to-br from-purple-400/20 to-pink-400/20 
-                        dark:from-purple-400/10 dark:to-pink-400/10 
-                        rounded-full blur-2xl animate-float" />
-          <div className="absolute right-1/4 bottom-1/4 w-48 h-48 
-                        bg-gradient-to-br from-blue-400/20 to-indigo-400/20 
-                        dark:from-blue-400/10 dark:to-indigo-400/10 
-                        rounded-full blur-2xl animate-float-delayed" />
-        </div>
-
+        {/* Aurora effect */}
+        <AuroraBackground />
+        
+        {/* Content */}
         <div className="container mx-auto px-4 relative">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Title with glow effect */}
-            <div className="relative inline-block mb-6">
-              <div className="absolute -inset-2 bg-gradient-to-r from-purple-600/0 via-pink-600/25 to-purple-600/0 
-                           opacity-0 group-hover:opacity-100 transition-opacity duration-500 
-                           animate-glow-slow blur-xl" />
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            {/* Main title with translation focus */}
+            <div className="space-y-4">
               <h1 className={cn(
-                "text-5xl md:text-6xl font-bold relative",
-                "bg-gradient-to-r from-purple-600 to-pink-600",
-                "dark:from-purple-400 dark:to-pink-400",
-                "bg-clip-text text-transparent",
-                "animate-fade-up motion-safe:animate-[fade-up_1s_ease-out]",
-                "group"
+                "text-4xl md:text-5xl lg:text-6xl font-bold",
+                "text-white dark:text-white",
+                "leading-tight tracking-tight",
+                "animate-fade-up motion-safe:animate-[fade-up_1s_ease-out]"
               )}>
-                {t.home.hero.title}
+                {t.home.hero.translateInto}
               </h1>
+              
+              {/* Language Animation */}
+              <div className="animate-fade-up motion-safe:animate-[fade-up_1.2s_ease-out]">
+                <LanguageAnimation lang={lang} />
+              </div>
             </div>
 
-            {/* Subtitle with subtle glow */}
-            <p className={cn(
-              "text-xl relative mb-8",
-              "text-gray-600 dark:text-gray-300",
-              "animate-fade-up motion-safe:animate-[fade-up_1.2s_ease-out]",
-              "before:absolute before:inset-0 before:bg-gradient-to-r",
-              "before:from-purple-400/0 before:via-pink-400/10 before:to-purple-400/0",
-              "before:opacity-0 group-hover:before:opacity-100",
-              "before:transition-opacity before:duration-500",
-              "before:animate-glow-slow before:blur-xl"
-            )}>
-              {t.home.hero.subtitle}
-            </p>
+            {/* ASO and Translation Benefits */}
+            <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+              <div className={cn(
+                "p-4 rounded-xl",
+                "bg-white/5 backdrop-blur-sm",
+                "border border-white/10",
+                "animate-fade-up motion-safe:animate-[fade-up_1.4s_ease-out]"
+              )}>
+                <h3 className="text-xl font-semibold text-purple-400 mb-2">
+                  {t.home.hero.aiTranslation}
+                </h3>
+                <p className="text-gray-300/90">
+                  {t.home.hero.aiTranslationDesc}
+                </p>
+              </div>
+              
+              <div className={cn(
+                "p-4 rounded-xl",
+                "bg-white/5 backdrop-blur-sm",
+                "border border-white/10",
+                "animate-fade-up motion-safe:animate-[fade-up_1.6s_ease-out]"
+              )}>
+                <h3 className="text-xl font-semibold text-pink-400 mb-2">
+                  {t.home.hero.asoOptimization}
+                </h3>
+                <p className="text-gray-300/90">
+                  {t.home.hero.asoOptimizationDesc}
+                </p>
+              </div>
+            </div>
 
-            {/* CTA Button with enhanced glow */}
+            {/* CTA Button */}
             <div className={cn(
-              "flex justify-center",
-              "animate-fade-up motion-safe:animate-[fade-up_1.4s_ease-out]"
+              "flex justify-center pt-8",
+              "animate-fade-up motion-safe:animate-[fade-up_1.8s_ease-out]"
             )}>
               <Link to="/signup" className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 
-                             rounded-xl opacity-70 group-hover:opacity-100 blur 
-                             transition-all duration-500 group-hover:blur-md animate-pulse" />
+                <div className="absolute -inset-1 rounded-xl opacity-70 group-hover:opacity-100 transition-all duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl blur-lg transform scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600/50 to-pink-600/50 rounded-xl blur-xl transform scale-110" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600/25 to-pink-600/25 rounded-xl blur-2xl transform scale-125" />
+                </div>
                 <Button 
                   size="lg" 
                   variant="gradient"
-                  className="relative"
+                  className="relative transform transition-transform duration-500 group-hover:scale-[1.02] font-semibold"
                 >
-                  {t.home.hero.startTrial}
+                  {t.home.hero.startTranslating}
                 </Button>
               </Link>
             </div>
