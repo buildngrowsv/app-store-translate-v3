@@ -1,3 +1,13 @@
+/*
+* File: App.tsx
+* Description: Main application component
+* Details: Provides routing and global providers for the application
+* - Wraps the app with ThemeProvider for dark mode support
+* - Includes all route definitions
+* - Provides the main layout structure
+* Date: 2024-03-20
+*/
+
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Header } from './components/Header';
@@ -13,61 +23,65 @@ import { ProjectWizard } from './components/wizard/ProjectWizard';
 import { ProjectResults } from './pages/ProjectResults';
 import { Language, languageMap } from './i18n';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <main className="pt-16">
-        <Routes>
-          <Route path="/" element={<Home lang="english" />} />
-          {(Object.keys(languageMap) as Language[]).map((lang) => (
+    <ThemeProvider>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+        <Header />
+        <main className="pt-16">
+          <Routes>
+            <Route path="/" element={<Home lang="english" />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
             <Route
-              key={lang}
-              path={`/${lang}`}
-              element={<Home lang={lang} />}
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
             />
-          ))}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route 
-            path="/dashboard" 
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/dashboard/new" 
-            element={
-              <ProtectedRoute>
-                <ProjectWizard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/dashboard/project/:id/results" 
-            element={
-              <ProtectedRoute>
-                <ProjectResults />
-              </ProtectedRoute>
-            } 
-          />
-          <Route path="/about" element={<About />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route 
-            path="/settings" 
-            element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            } 
-          />
-        </Routes>
-      </main>
-    </div>
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/project/new"
+              element={
+                <ProtectedRoute>
+                  <ProjectWizard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/project/:id/results"
+              element={
+                <ProtectedRoute>
+                  <ProjectResults />
+                </ProtectedRoute>
+              }
+            />
+            {/* Language routes */}
+            {Object.keys(languageMap).map((lang) => (
+              <Route
+                key={lang}
+                path={`/${lang === 'english' ? '' : lang}`}
+                element={<Home lang={lang as Language} />}
+              />
+            ))}
+          </Routes>
+        </main>
+      </div>
+    </ThemeProvider>
   );
 }
 

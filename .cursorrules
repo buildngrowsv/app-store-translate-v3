@@ -16,6 +16,8 @@ At the top of each file, include a comment with the following:
 - Details of what it does and how it interacts and relies on other files and external resources
 - Date
 
+Create more files than usual to split things up and make the file name descriptive of the action. Treat each file as a unit of work or API call.
+
 As you go, implement animations and transitions.
 
 Also add beautiful elegant UI loading animations. Especially for the home screen, let's trigger animations as the user scrolls. Use elegant blur animations and effects as well.
@@ -24,9 +26,13 @@ Add elegant animated glows to components and text where it makes sense that chan
 
 Implement beautiful design.
 
-Implement a dark and light theme and auto switching based on device settings.
+Make important CTA buttons and components pop!
 
-Use gradients, not solid colors. 3-color gradients. Use beautiful icons.
+Implement a dark and light theme that switches based on system setting.
+
+Use gradients, not solid colors. 3-color gradients. Use beautiful icons. The color and design choices should make the product feel premium and unique and expensive and polished.
+
+Since in many ways we are a copywriting tool, the copy should be top tier!
 
 Create a documentation folder and put .md files in it for documentation as you make plans.
 
