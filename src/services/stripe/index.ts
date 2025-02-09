@@ -2,9 +2,13 @@ import { loadStripe } from '@stripe/stripe-js';
 import { auth, db, functions } from '../../services/firebase';
 import { getDoc, doc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
+import { StripeCache } from '../cache/stripeCache';
 
 // Initialize Stripe with your publishable key
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+
+// Get cache instance
+const stripeCache = StripeCache.getInstance();
 
 // Firebase Functions base URL
 const FUNCTIONS_BASE_URL = 'https://us-central1-reachmix.cloudfunctions.net';
@@ -17,28 +21,45 @@ const STRIPE_ENDPOINTS = {
   cancellationFeedback: `${FUNCTIONS_BASE_URL}/cancellationFeedback`
 };
 
+interface CheckoutSession {
+  sessionId: string;
+  url: string;
+}
+
+interface PortalSession {
+  url: string;
+}
+
 export class StripeService {
   // Create a checkout session for subscription
-  static async createCheckoutSession(priceId: string): Promise<string> {
+  static async createCheckoutSession(priceId: string): Promise<CheckoutSession> {
     try {
-      console.log('Creating checkout session with priceId:', priceId);
-      
-      const response = await fetch(`${FUNCTIONS_BASE_URL}${STRIPE_ENDPOINTS.createCheckoutSession}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ priceId }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      // Check cache first
+      const cachedUrl = stripeCache.getCheckoutSession(priceId);
+      if (cachedUrl) {
+        console.log('Using cached checkout session for price:', priceId);
+        return { sessionId: '', url: cachedUrl };
       }
 
-      const data = await response.json();
-      console.log('Checkout session created:', data);
-      return data.sessionId;
+      console.log('Creating checkout session with priceId:', priceId);
+      
+      const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
+      const result = await createCheckoutSession({ priceId });
+      
+      if (!result.data || !(result.data as any).sessionId) {
+        console.error('Invalid response from createCheckoutSession:', result);
+        throw new Error('Failed to create checkout session. Please try again later');
+      }
+
+      const { sessionId, url } = result.data as CheckoutSession;
+      console.log('Got session ID:', sessionId);
+
+      // Cache the URL
+      if (url) {
+        stripeCache.cacheCheckoutSession(priceId, url);
+      }
+
+      return { sessionId, url };
     } catch (error) {
       console.error('Error creating checkout session:', error);
       throw error;
@@ -48,12 +69,19 @@ export class StripeService {
   // Redirect to Stripe Checkout
   static async redirectToCheckout(priceId: string): Promise<void> {
     try {
+      // Check cache first
+      const cachedUrl = stripeCache.getCheckoutSession(priceId);
+      if (cachedUrl) {
+        window.location.href = cachedUrl;
+        return;
+      }
+
+      // If no cached URL, create a new session
       const stripe = await stripePromise;
       if (!stripe) throw new Error('Stripe not initialized');
 
       console.log('Creating checkout session for price:', priceId);
       
-      // Use Firebase Function to create checkout session
       const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
       const result = await createCheckoutSession({ priceId });
       
@@ -62,14 +90,20 @@ export class StripeService {
         throw new Error('Failed to create checkout session. Please try again later');
       }
 
-      const { sessionId } = result.data as { sessionId: string };
+      const { sessionId, url } = result.data as CheckoutSession;
       console.log('Got session ID:', sessionId);
 
-      const { error } = await stripe.redirectToCheckout({ sessionId });
-
-      if (error) {
-        console.error('Stripe redirect error:', error);
-        throw error;
+      // Cache the URL for future use
+      if (url) {
+        stripeCache.cacheCheckoutSession(priceId, url);
+        window.location.href = url;
+      } else {
+        // Fall back to Stripe's redirect if no URL provided
+        const { error } = await stripe.redirectToCheckout({ sessionId });
+        if (error) {
+          console.error('Stripe redirect error:', error);
+          throw error;
+        }
       }
     } catch (error) {
       console.error('Error redirecting to checkout:', error);
@@ -101,8 +135,15 @@ export class StripeService {
   }
 
   // Create and redirect to customer portal
-  static async redirectToCustomerPortal(): Promise<void> {
+  static async createPortalSession(): Promise<PortalSession> {
     try {
+      // Check cache first
+      const cachedUrl = stripeCache.getPortalSession();
+      if (cachedUrl) {
+        console.log('Using cached portal session');
+        return { url: cachedUrl };
+      }
+
       // Get current user's customer ID from Firebase
       const user = auth.currentUser;
       if (!user) {
@@ -148,7 +189,7 @@ export class StripeService {
 
       console.log('Creating portal session for customer:', customerId);
       
-      // Use Firebase Functions directly instead of REST API
+      // Use Firebase Functions directly
       const createPortalSession = httpsCallable(functions, 'createPortalSession');
       const result = await createPortalSession({ customerId });
       
@@ -157,11 +198,15 @@ export class StripeService {
         throw new Error('Failed to create portal session. Please try again later');
       }
       
-      const { url } = result.data as { url: string };
-      console.log('Redirecting to portal URL');
-      window.location.href = url;
+      const { url } = result.data as PortalSession;
+      console.log('Got portal URL');
+
+      // Cache the URL
+      stripeCache.cachePortalSession(url);
+
+      return { url };
     } catch (error) {
-      console.error('Error in redirectToCustomerPortal:', error);
+      console.error('Error in createPortalSession:', error);
       throw error;
     }
   }
@@ -169,20 +214,46 @@ export class StripeService {
   // Submit cancellation feedback
   static async submitCancellationFeedback(reason: string, feedback: string): Promise<void> {
     try {
-      const response = await fetch(`${FUNCTIONS_BASE_URL}${STRIPE_ENDPOINTS.cancellationFeedback}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ reason, feedback })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const submitFeedback = httpsCallable(functions, 'handleCancellationFeedback');
+      await submitFeedback({ reason, feedback });
     } catch (error) {
       console.error('Error submitting cancellation feedback:', error);
       throw error;
     }
+  }
+
+  // Prefetch all necessary Stripe sessions
+  static async prefetchSessions(priceIds: string[]): Promise<void> {
+    try {
+      // Clear expired sessions first
+      stripeCache.clearExpiredSessions();
+
+      // Create portal session if not cached
+      const cachedPortalUrl = stripeCache.getPortalSession();
+      if (!cachedPortalUrl) {
+        await this.createPortalSession().catch(error => {
+          console.error('Error prefetching portal session:', error);
+        });
+      }
+
+      // Create checkout sessions for each price ID if not cached
+      await Promise.all(priceIds.map(async priceId => {
+        const cachedUrl = stripeCache.getCheckoutSession(priceId);
+        if (!cachedUrl) {
+          try {
+            await this.createCheckoutSession(priceId);
+          } catch (error) {
+            console.error(`Error prefetching checkout session for ${priceId}:`, error);
+          }
+        }
+      }));
+    } catch (error) {
+      console.error('Error prefetching Stripe sessions:', error);
+    }
+  }
+
+  // Clear cache on logout
+  static clearCache(): void {
+    stripeCache.clearCache();
   }
 } 

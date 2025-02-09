@@ -24,6 +24,7 @@ import { ProjectResults } from './pages/ProjectResults';
 import { Language, languageMap } from './i18n';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
@@ -80,6 +81,17 @@ function App() {
             ))}
           </Routes>
         </main>
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            className: 'dark:bg-gray-800 dark:text-white',
+            duration: 5000,
+            style: {
+              background: 'var(--toast-bg)',
+              color: 'var(--toast-color)',
+            },
+          }}
+        />
       </div>
     </ThemeProvider>
   );

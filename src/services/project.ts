@@ -9,12 +9,12 @@
 */
 
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import type { Project, ProjectResults } from '../types';
+import type { Project, ProjectResults, ProjectUpdate } from '../types';
 
 export class ProjectService {
   private readonly functions = getFunctions();
 
-  async createProject(data: Omit<Project, 'id' | 'lastUpdated'>): Promise<Project> {
+  async createProject(data: Omit<Project, 'id' | 'lastUpdated' | 'results'>): Promise<Project> {
     try {
       const createProjectFn = httpsCallable(this.functions, 'createProject');
       const result = await createProjectFn(data);
@@ -25,7 +25,7 @@ export class ProjectService {
     }
   }
 
-  async updateProject(projectId: string, updates: Partial<Project>): Promise<void> {
+  async updateProject(projectId: string, updates: ProjectUpdate): Promise<void> {
     try {
       const updateProjectFn = httpsCallable(this.functions, 'updateProject');
       await updateProjectFn({ projectId, updates });
@@ -53,6 +53,17 @@ export class ProjectService {
     } catch (error: any) {
       console.error('Failed to get project results:', error);
       throw new Error(error.message || 'Failed to get project results');
+    }
+  }
+
+  async getProjects(projectIds: string[]): Promise<Project[]> {
+    try {
+      const getProjectsFn = httpsCallable(this.functions, 'getProjects');
+      const result = await getProjectsFn({ projectIds });
+      return (result.data as { projects: Project[] }).projects;
+    } catch (error: any) {
+      console.error('Failed to get projects:', error);
+      throw new Error(error.message || 'Failed to get projects');
     }
   }
 } 

@@ -28,14 +28,16 @@ interface CallableRequest<T> {
   };
 }
 
-// Initialize CORS middleware
-const corsHandler = cors({
-  origin: true, // Allow all origins for now - you can restrict this to specific domains
-  credentials: true,
-});
-
 // Initialize Firebase Admin
 admin.initializeApp();
+
+// Initialize CORS middleware
+const corsHandler = cors({
+  origin: true, // Allow all origins in development
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+});
 
 // Initialize Stripe
 const stripe = new Stripe(functions.config().stripe.secret_key, {
@@ -398,3 +400,10 @@ export { handleCancellationFeedback } from './stripe/feedback';
 
 // Export auth functions
 export { signUp, signIn, resetPassword } from './auth';
+
+// Wrap all callable functions with CORS
+const wrapWithCors = (handler: functions.HttpsFunction) => {
+  return functions.https.onRequest((request, response) => {
+    corsHandler(request, response, () => handler(request, response));
+  });
+};

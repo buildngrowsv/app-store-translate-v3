@@ -15,6 +15,19 @@ interface ProjectData {
   languages?: string[];
 }
 
+type OpenAIMessage = {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+};
+
+type OpenAIResponse = {
+  choices: Array<{
+    message: {
+      content: string;
+    };
+  }>;
+};
+
 interface ProjectResults {
   status: 'completed' | 'error';
   data?: any;
@@ -48,7 +61,7 @@ export const generateASOContent = functions.https.onCall(async (data: ProjectDat
 
     // Process based on project type
     if (data.type === 'enhance') {
-      const messages = [
+      const messages: OpenAIMessage[] = [
         { role: 'system', content: generatePrompts.enhance.system },
         { 
           role: 'user', 
@@ -62,7 +75,7 @@ export const generateASOContent = functions.https.onCall(async (data: ProjectDat
 
       const completion = await openai.chat.completions.create({
         model: "gpt-4",
-        messages: messages as any[],
+        messages,
         temperature: 0.7,
         max_tokens: 2000,
       });
@@ -86,7 +99,7 @@ export const generateASOContent = functions.https.onCall(async (data: ProjectDat
       const translations = [];
 
       for (const language of data.languages!) {
-        const messages = [
+        const messages: OpenAIMessage[] = [
           { role: 'system', content: generatePrompts.translate.system(language) },
           { 
             role: 'user', 
@@ -100,7 +113,7 @@ export const generateASOContent = functions.https.onCall(async (data: ProjectDat
 
         const completion = await openai.chat.completions.create({
           model: "gpt-4",
-          messages: messages as any[],
+          messages,
           temperature: 0.7,
           max_tokens: 2000,
         });
@@ -124,28 +137,20 @@ export const generateASOContent = functions.https.onCall(async (data: ProjectDat
         data: { translations },
       };
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in generateASOContent:', error);
     
     // Handle rate limits
-    if (error?.response?.status === 429) {
+    if (error instanceof Error && error.message.includes('429')) {
       throw new functions.https.HttpsError(
         'resource-exhausted',
         'OpenAI rate limit exceeded. Please try again later.'
       );
     }
 
-    // Handle other OpenAI API errors
-    if (error?.response?.data?.error) {
-      throw new functions.https.HttpsError(
-        'internal',
-        `OpenAI API error: ${error.response.data.error.message}`
-      );
-    }
-
     throw new functions.https.HttpsError(
       'internal',
-      error.message || 'An unexpected error occurred'
+      error instanceof Error ? error.message : 'An unexpected error occurred'
     );
   }
 }); 

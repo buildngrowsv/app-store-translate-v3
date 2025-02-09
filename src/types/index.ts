@@ -6,10 +6,9 @@ export interface Project {
   type: 'enhance' | 'translate';
   languages: string[];
   lastUpdated: string;
-  results?: {
-    status: 'in-progress' | 'completed';
-    data?: any;
-  };
+  createdAt: string;
+  userId: string;
+  results?: ProjectResults;
 }
 
 export interface ProjectResults {
@@ -23,7 +22,24 @@ export interface ProjectResults {
   error?: string;
 }
 
+export interface ProjectUpdate {
+  name?: string;
+  description?: string;
+  keywords?: string;
+  languages?: string[];
+  results?: ProjectResults;
+}
+
 export interface User {
   email: string;
-  projects: Project[];
+  projects: string[];
+  subscription?: {
+    status: 'trial' | 'active' | 'inactive';
+    plan?: string;
+    trialEnd?: string;
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+    currentPeriodEnd?: Date;
+    cancelAtPeriodEnd?: boolean;
+  };
 }

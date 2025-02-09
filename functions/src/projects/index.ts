@@ -12,6 +12,7 @@
 import * as functions from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
 import { SubscriptionService } from '../services/subscription';
+import { apiLimiter } from '../middleware/rateLimit';
 
 interface ProjectData {
   name: string;
@@ -22,9 +23,22 @@ interface ProjectData {
 }
 
 interface ProjectResults {
-  status: 'completed' | 'error';
-  data?: any;
+  status: 'pending' | 'in-progress' | 'completed' | 'error';
+  data?: {
+    title: string;
+    subtitle: string;
+    description: string;
+    keywords: string[];
+  };
   error?: string;
+}
+
+interface ProjectUpdate {
+  name?: string;
+  description?: string;
+  keywords?: string;
+  languages?: string[];
+  results?: ProjectResults;
 }
 
 // Create project function
@@ -32,6 +46,9 @@ export const createProject = functions.https.onCall(async (data: ProjectData, co
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
+
+  // Apply rate limiting
+  await apiLimiter.authenticated(context);
 
   try {
     // Input validation
@@ -87,13 +104,28 @@ export const createProject = functions.https.onCall(async (data: ProjectData, co
 });
 
 // Update project function
-export const updateProject = functions.https.onCall(async (data: { projectId: string; updates: any }, context) => {
+export const updateProject = functions.https.onCall(async (data: { projectId: string; updates: ProjectUpdate }, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
+  // Apply rate limiting
+  await apiLimiter.authenticated(context);
+
   try {
     const { projectId, updates } = data;
+
+    // Validate update data
+    if (updates.name === '') {
+      throw new functions.https.HttpsError('invalid-argument', 'Name cannot be empty');
+    }
+    if (updates.description === '') {
+      throw new functions.https.HttpsError('invalid-argument', 'Description cannot be empty');
+    }
+    if (updates.languages && updates.languages.length === 0) {
+      throw new functions.https.HttpsError('invalid-argument', 'Languages array cannot be empty');
+    }
+
     const projectRef = admin.firestore().collection('projects').doc(projectId);
     const project = await projectRef.get();
 
@@ -102,13 +134,30 @@ export const updateProject = functions.https.onCall(async (data: { projectId: st
     }
 
     const projectData = project.data();
-    if (projectData?.userId !== context.auth.uid) {
+    if (projectData?.userId !== context.auth?.uid) {
       throw new functions.https.HttpsError('permission-denied', 'Not authorized to update this project');
     }
 
-    // Update project
+    // Clean up updates object to remove undefined values
+    const cleanUpdates = Object.entries(updates).reduce<Record<string, unknown>>((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+
+    // If results is being updated, ensure it has the correct structure
+    if (cleanUpdates.results) {
+      cleanUpdates.results = {
+        status: cleanUpdates.results.status || 'pending',
+        ...(cleanUpdates.results.data && { data: cleanUpdates.results.data }),
+        ...(cleanUpdates.results.error && { error: cleanUpdates.results.error })
+      };
+    }
+
+    // Update project with cleaned data
     await projectRef.update({
-      ...updates,
+      ...cleanUpdates,
       lastUpdated: admin.firestore.FieldValue.serverTimestamp()
     });
 
@@ -127,6 +176,9 @@ export const deleteProject = functions.https.onCall(async (data: { projectId: st
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
+
+  // Apply rate limiting
+  await apiLimiter.authenticated(context);
 
   try {
     const { projectId } = data;
@@ -166,6 +218,9 @@ export const getProjectResults = functions.https.onCall(async (data: { projectId
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
+  // Apply rate limiting
+  await apiLimiter.authenticated(context);
+
   try {
     const { projectId } = data;
     const projectRef = admin.firestore().collection('projects').doc(projectId);
@@ -190,6 +245,49 @@ export const getProjectResults = functions.https.onCall(async (data: { projectId
     throw new functions.https.HttpsError(
       'internal',
       error instanceof Error ? error.message : 'Failed to get project results'
+    );
+  }
+});
+
+// Get multiple projects function
+export const getProjects = functions.https.onCall(async (data: { projectIds: string[] }, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+
+  // Apply rate limiting
+  await apiLimiter.authenticated(context);
+
+  try {
+    const { projectIds } = data;
+    
+    if (!projectIds || !Array.isArray(projectIds)) {
+      throw new functions.https.HttpsError('invalid-argument', 'Project IDs must be an array');
+    }
+
+    if (projectIds.length > 100) {
+      throw new functions.https.HttpsError('invalid-argument', 'Cannot request more than 100 projects at once');
+    }
+
+    const projectRefs = projectIds.map(id => 
+      admin.firestore().collection('projects').doc(id)
+    );
+
+    const projects = await admin.firestore().getAll(...projectRefs);
+    
+    const results = projects
+      .filter(doc => doc.exists && doc.data()?.userId === context.auth?.uid)
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+    return { projects: results };
+  } catch (error) {
+    console.error('Error getting projects:', error);
+    throw new functions.https.HttpsError(
+      'internal',
+      error instanceof Error ? error.message : 'Failed to get projects'
     );
   }
 }); 

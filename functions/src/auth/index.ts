@@ -47,7 +47,7 @@ export const signUp = functions.https.onCall(async (data: SignUpData, context) =
       );
     }
 
-    // Create user
+    // Create user in Firebase Auth
     const userRecord = await admin.auth().createUser({
       email: data.email,
       password: data.password,
