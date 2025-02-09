@@ -149,14 +149,14 @@ export const ProjectWizard: React.FC = () => {
         />
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg flex items-start">
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg flex items-start">
             <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium">Subscription Limit Reached</p>
               <p className="mt-1">{error}</p>
               <a 
                 href="/settings#subscription" 
-                className="mt-2 inline-block text-red-700 hover:text-red-800 underline"
+                className="mt-2 inline-block text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 underline"
               >
                 Upgrade your plan
               </a>
@@ -164,7 +164,7 @@ export const ProjectWizard: React.FC = () => {
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
           {step === 'details' && (
             <ProjectDetails
               data={projectData}
@@ -192,6 +192,7 @@ export const ProjectWizard: React.FC = () => {
             </Button>
           )}
           <Button
+            variant="gradient"
             className={step === 'details' ? 'ml-auto' : ''}
             onClick={handleNext}
             disabled={

@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { SubscriptionService } from '../../services/subscription';
 import { AlertCircle, Plus, X } from 'lucide-react';
 import { languages } from '../../data/languages';
+import { cn } from '../../lib/utils';
 
 interface LanguageSelectionProps {
   selected: string[];
@@ -163,7 +164,7 @@ export const LanguageSelection: React.FC<LanguageSelectionProps> = ({
               </button>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-4">r
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Language Code
@@ -173,7 +174,17 @@ export const LanguageSelection: React.FC<LanguageSelectionProps> = ({
                   value={customLanguage.code}
                   onChange={(e) => setCustomLanguage(prev => ({ ...prev, code: e.target.value }))}
                   placeholder="e.g., fr, es, de"
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                  className={cn(
+                    "block w-full px-4 py-3 rounded-md text-base shadow-sm",
+                    "bg-white dark:bg-gray-800",
+                    "border border-gray-300 dark:border-gray-600",
+                    "text-gray-900 dark:text-white",
+                    "placeholder:text-gray-500 dark:placeholder:text-gray-400",
+                    "transition-[border-color,box-shadow] duration-300 ease-out",
+                    "focus:border-purple-500 dark:focus:border-purple-400",
+                    "focus:shadow-[0_0_0_2px_rgba(168,85,247,0.2)] dark:focus:shadow-[0_0_0_2px_rgba(192,132,252,0.2)]",
+                    "focus:outline-none"
+                  )}
                   maxLength={5}
                 />
               </div>
@@ -187,7 +198,17 @@ export const LanguageSelection: React.FC<LanguageSelectionProps> = ({
                   value={customLanguage.name}
                   onChange={(e) => setCustomLanguage(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="e.g., French"
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                  className={cn(
+                    "block w-full px-4 py-3 rounded-md text-base shadow-sm",
+                    "bg-white dark:bg-gray-800",
+                    "border border-gray-300 dark:border-gray-600",
+                    "text-gray-900 dark:text-white",
+                    "placeholder:text-gray-500 dark:placeholder:text-gray-400",
+                    "transition-[border-color,box-shadow] duration-300 ease-out",
+                    "focus:border-purple-500 dark:focus:border-purple-400",
+                    "focus:shadow-[0_0_0_2px_rgba(168,85,247,0.2)] dark:focus:shadow-[0_0_0_2px_rgba(192,132,252,0.2)]",
+                    "focus:outline-none"
+                  )}
                 />
               </div>
               
@@ -200,7 +221,17 @@ export const LanguageSelection: React.FC<LanguageSelectionProps> = ({
                   value={customLanguage.nativeName}
                   onChange={(e) => setCustomLanguage(prev => ({ ...prev, nativeName: e.target.value }))}
                   placeholder="e.g., Français"
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                  className={cn(
+                    "block w-full px-4 py-3 rounded-md text-base shadow-sm",
+                    "bg-white dark:bg-gray-800",
+                    "border border-gray-300 dark:border-gray-600",
+                    "text-gray-900 dark:text-white",
+                    "placeholder:text-gray-500 dark:placeholder:text-gray-400",
+                    "transition-[border-color,box-shadow] duration-300 ease-out",
+                    "focus:border-purple-500 dark:focus:border-purple-400",
+                    "focus:shadow-[0_0_0_2px_rgba(168,85,247,0.2)] dark:focus:shadow-[0_0_0_2px_rgba(192,132,252,0.2)]",
+                    "focus:outline-none"
+                  )}
                 />
               </div>
               

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '../Button';
+import { cn } from '../../lib/utils';
 
 interface CancellationSurveyProps {
   onClose: () => void;
@@ -48,6 +49,7 @@ export const CancellationSurvey: React.FC<CancellationSurveyProps> = ({
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          aria-label="Close dialog"
         >
           <X className="w-6 h-6" />
         </button>
@@ -65,8 +67,19 @@ export const CancellationSurvey: React.FC<CancellationSurveyProps> = ({
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              className={cn(
+                "block w-full px-4 py-3 rounded-md text-base shadow-sm",
+                "bg-white dark:bg-gray-800",
+                "border border-gray-300 dark:border-gray-600",
+                "text-gray-900 dark:text-white",
+                "placeholder:text-gray-500 dark:placeholder:text-gray-400",
+                "transition-all duration-200 ease-in-out",
+                "focus:border-purple-500 dark:focus:border-purple-400",
+                "focus:ring-2 focus:ring-purple-500/20 dark:focus:ring-purple-400/20",
+                "focus:outline-none"
+              )}
               required
+              aria-label="Cancellation reason"
             >
               <option value="">Select a reason</option>
               {reasons.map((r) => (
@@ -82,7 +95,17 @@ export const CancellationSurvey: React.FC<CancellationSurveyProps> = ({
             <textarea
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              className={cn(
+                "block w-full px-4 py-3 rounded-md text-base shadow-sm",
+                "bg-white dark:bg-gray-800",
+                "border border-gray-300 dark:border-gray-600",
+                "text-gray-900 dark:text-white",
+                "placeholder:text-gray-500 dark:placeholder:text-gray-400",
+                "transition-all duration-200 ease-in-out",
+                "focus:border-purple-500 dark:focus:border-purple-400",
+                "focus:ring-2 focus:ring-purple-500/20 dark:focus:ring-purple-400/20",
+                "focus:outline-none"
+              )}
               rows={4}
               placeholder="Tell us more about your experience..."
             />

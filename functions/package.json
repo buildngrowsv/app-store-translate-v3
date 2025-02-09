@@ -17,7 +17,9 @@
   },
   "main": "lib/index.js",
   "dependencies": {
+    "@mailchimp/mailchimp_transactional": "^1.0.59",
     "@types/cors": "^2.8.17",
+    "@types/mailchimp__mailchimp_transactional": "^1.0.10",
     "cors": "^2.8.5",
     "firebase-admin": "^11.11.1",
     "firebase-functions": "^5.1.0",

@@ -279,12 +279,12 @@ export const Settings: React.FC = () => {
 
               <div className="mt-6 flex gap-4">
                 <Button
-                  variant="gradient"
                   onClick={handleManageSubscription}
-                  disabled={isLoading}
-                  className="flex items-center"
+                  variant="outline"
+                  isLoading={isLoading}
+                  loadingText="Redirecting to portal..."
+                  className="mt-4"
                 >
-                  <CreditCard className="w-4 h-4 mr-2" />
                   Manage Subscription
                 </Button>
                 {userData?.subscription?.status === 'active' && (

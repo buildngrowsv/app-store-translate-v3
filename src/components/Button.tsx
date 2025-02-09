@@ -10,15 +10,27 @@
 */
 
 import React from 'react';
+import { Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'gradient' | 'outline' | 'destructive';
   size?: 'sm' | 'md' | 'lg';
+  isLoading?: boolean;
+  loadingText?: string;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', children, ...props }, ref) => {
+  ({ 
+    className, 
+    variant = 'primary', 
+    size = 'md', 
+    children, 
+    isLoading,
+    loadingText,
+    disabled,
+    ...props 
+  }, ref) => {
     return (
       <button
         ref={ref}
@@ -60,10 +72,18 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           },
           className
         )}
+        disabled={isLoading || disabled}
         {...props}
       >
         <span className="relative z-10 flex items-center justify-center">
-          {children}
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              {loadingText || children}
+            </>
+          ) : (
+            children
+          )}
         </span>
       </button>
     );

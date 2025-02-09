@@ -21,6 +21,7 @@ export interface TranslatedContent {
 }
 
 export interface ProjectResults {
-  status: 'completed';
-  data: GeneratedContent | { translations: (TranslatedContent & { language: string })[] };
+  status: 'completed' | 'error';
+  data?: GeneratedContent | { translations: (TranslatedContent & { language: string })[] };
+  error?: string;
 }

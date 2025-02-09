@@ -44,11 +44,12 @@ export const CheckoutButton: React.FC<CheckoutButtonProps> = ({
   return (
     <Button
       onClick={handleCheckout}
-      disabled={isLoading}
+      isLoading={isLoading}
+      loadingText="Redirecting to Stripe..."
       className={className}
       variant={variant}
     >
-      {isLoading ? 'Processing...' : children || `Subscribe to ${planName}`}
+      {children || `Subscribe to ${planName}`}
     </Button>
   );
 }; 

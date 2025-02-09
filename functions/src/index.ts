@@ -13,6 +13,7 @@ import Stripe from 'stripe';
 import { OpenAI } from 'openai';
 import { UserRecord } from 'firebase-admin/auth';
 import * as cors from 'cors';
+import { generateASOContent } from './openai/aso';
 
 interface TranslationRequest {
   text: string;
@@ -385,3 +386,15 @@ export const createCheckoutSession = functions.https.onCall(async (data, context
     );
   }
 });
+
+// Re-export the ASO content generation function
+export { generateASOContent };
+
+// Export project management functions
+export { createProject, updateProject, deleteProject, getProjectResults } from './projects';
+
+// Export cancellation feedback function
+export { handleCancellationFeedback } from './stripe/feedback';
+
+// Export auth functions
+export { signUp, signIn, resetPassword } from './auth';

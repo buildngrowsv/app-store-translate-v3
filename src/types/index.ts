@@ -12,6 +12,17 @@ export interface Project {
   };
 }
 
+export interface ProjectResults {
+  status: 'pending' | 'in-progress' | 'completed' | 'error';
+  data?: {
+    title: string;
+    subtitle: string;
+    description: string;
+    keywords: string[];
+  };
+  error?: string;
+}
+
 export interface User {
   email: string;
   projects: Project[];
