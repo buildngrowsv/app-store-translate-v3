@@ -10,9 +10,10 @@
 
 import * as functions from 'firebase-functions/v1';
 import Stripe from 'stripe';
+import * as admin from 'firebase-admin';
 
 const stripe = new Stripe(functions.config().stripe.secret_key, {
-  apiVersion: '2023-10-16'
+  apiVersion: '2023-08-16'
 });
 
 const DOMAIN = functions.config().app.domain;
@@ -35,9 +36,32 @@ export const createCheckoutSession = functions.https.onCall(async (data, context
   }
 
   try {
+    // Get or create customer
+    const userId = context.auth.uid;
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+    let stripeCustomerId = userDoc.data()?.stripeCustomerId;
+
+    if (!stripeCustomerId) {
+      // Create new customer
+      const customer = await stripe.customers.create({
+        email: context.auth.token.email,
+        metadata: {
+          userId: userId, // Important for webhook processing
+        },
+      });
+      stripeCustomerId = customer.id;
+      
+      // Store customer ID
+      await admin.firestore().collection('users').doc(userId).update({
+        stripeCustomerId: customer.id
+      });
+    }
+
+    // Create checkout session with customer ID
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
+      customer: stripeCustomerId,
       line_items: [
         {
           price: priceId,
@@ -46,7 +70,6 @@ export const createCheckoutSession = functions.https.onCall(async (data, context
       ],
       success_url: `${DOMAIN}/settings?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${DOMAIN}/settings`,
-      client_reference_id: context.auth.uid, // Add user ID for webhook
       metadata: {
         userId: context.auth.uid,
       },

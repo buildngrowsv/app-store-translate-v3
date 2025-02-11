@@ -64,11 +64,16 @@ export const signUp = functions.https.onCall(async (data: SignUpData, context) =
         status: 'trial',
         trialEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) // 14 days trial
       },
-      projects: []
+      projects: [],
+      emailVerificationLink: null,
+      passwordResetLink: null
     });
 
     // Send email verification
     const emailVerificationLink = await admin.auth().generateEmailVerificationLink(data.email);
+    await admin.firestore().collection('users').doc(userRecord.uid).update({
+      emailVerificationLink
+    });
     
     // TODO: Send email using your email service
     // await emailService.sendVerificationEmail(data.email, emailVerificationLink);
@@ -133,8 +138,9 @@ export const signIn = functions.https.onCall(async (data: SignInData, context) =
     // but still allow sign in
     if (!userRecord.emailVerified) {
       const emailVerificationLink = await admin.auth().generateEmailVerificationLink(data.email);
-      // TODO: Send verification email in background
-      // await emailService.sendVerificationEmail(data.email, emailVerificationLink);
+      await admin.firestore().collection('users').doc(userRecord.uid).update({
+        emailVerificationLink
+      });
       
       return { 
         token,
@@ -179,8 +185,14 @@ export const resetPassword = functions.https.onCall(async (data: PasswordResetDa
       );
     }
 
+    // Get user record first
+    const userRecord = await admin.auth().getUserByEmail(data.email);
+
     // Generate password reset link
     const resetLink = await admin.auth().generatePasswordResetLink(data.email);
+    await admin.firestore().collection('users').doc(userRecord.uid).update({
+      passwordResetLink: resetLink
+    });
     
     // TODO: Send email using your email service
     // await emailService.sendPasswordResetEmail(data.email, resetLink);

@@ -1,8 +1,18 @@
+/*
+* File: src/services/openai.ts
+* Description: OpenAI service for client-side operations
+* Details: Provides interface to Firebase Functions for OpenAI operations
+* - Project content generation
+* - Text translation
+* - Error handling and rate limiting
+* Date: 2024-03-20
+*/
+
 import { Project } from '../types';
 import type { ProjectResults } from './openai/types';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 
-class OpenAIService {
+export class OpenAIService {
   private readonly functions = getFunctions();
 
   async processProject(project: Project): Promise<ProjectResults> {
@@ -27,6 +37,17 @@ class OpenAIService {
         status: 'error',
         error: error.message || 'An unexpected error occurred',
       };
+    }
+  }
+
+  async translateText(text: string, targetLanguage: string): Promise<string> {
+    try {
+      const translateFn = httpsCallable(this.functions, 'translateText');
+      const result = await translateFn({ text, targetLanguage });
+      return (result.data as { translatedText: string }).translatedText;
+    } catch (error: any) {
+      console.error('Failed to translate text:', error);
+      throw new Error(error.message || 'Failed to translate text');
     }
   }
 }

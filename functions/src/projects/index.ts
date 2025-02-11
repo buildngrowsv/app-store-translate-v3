@@ -23,14 +23,21 @@ interface ProjectData {
 }
 
 interface ProjectResults {
-  status: 'pending' | 'in-progress' | 'completed' | 'error';
-  data?: {
-    title: string;
-    subtitle: string;
-    description: string;
-    keywords: string[];
-  };
-  error?: string;
+  status: 'pending' | 'completed' | 'error';
+  data?: Record<string, unknown>;
+  error?: string | null;
+}
+
+interface ProjectDocument {
+  userId: string;
+  name: string;
+  description: string;
+  keywords?: string;
+  type: 'enhance' | 'translate';
+  languages?: string[];
+  createdAt: admin.firestore.Timestamp;
+  lastUpdated: admin.firestore.Timestamp;
+  results: ProjectResults;
 }
 
 interface ProjectUpdate {
@@ -39,6 +46,58 @@ interface ProjectUpdate {
   keywords?: string;
   languages?: string[];
   results?: ProjectResults;
+}
+
+// Type guard for project results
+function isProjectResults(obj: unknown): obj is ProjectResults {
+  if (!obj || typeof obj !== 'object') return false;
+  
+  const results = obj as Partial<ProjectResults>;
+  
+  // Check status
+  if (!results.status || !['pending', 'completed', 'error'].includes(results.status)) {
+    return false;
+  }
+  
+  // Check data if present
+  if (results.data !== undefined && (typeof results.data !== 'object' || results.data === null)) {
+    return false;
+  }
+  
+  // Check error if present
+  if (results.error !== undefined && results.error !== null && typeof results.error !== 'string') {
+    return false;
+  }
+  
+  return true;
+}
+
+// Clean updates helper function
+function cleanProjectUpdates(updates: ProjectUpdate): Partial<ProjectDocument> {
+  const cleanUpdates = Object.entries(updates).reduce<Partial<ProjectDocument>>((acc, [key, value]) => {
+    if (value !== undefined) {
+      acc[key as keyof ProjectDocument] = value;
+    }
+    return acc;
+  }, {});
+
+  // Handle results separately with type checking
+  if (cleanUpdates.results) {
+    if (!isProjectResults(cleanUpdates.results)) {
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        'Invalid results format'
+      );
+    }
+    
+    cleanUpdates.results = {
+      status: cleanUpdates.results.status,
+      ...(cleanUpdates.results.data && { data: cleanUpdates.results.data }),
+      ...(cleanUpdates.results.error && { error: cleanUpdates.results.error })
+    };
+  }
+
+  return cleanUpdates;
 }
 
 // Create project function
@@ -106,7 +165,10 @@ export const createProject = functions.https.onCall(async (data: ProjectData, co
 // Update project function
 export const updateProject = functions.https.onCall(async (data: { projectId: string; updates: ProjectUpdate }, context) => {
   if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'Must be logged in to update project'
+    );
   }
 
   // Apply rate limiting
@@ -133,27 +195,13 @@ export const updateProject = functions.https.onCall(async (data: { projectId: st
       throw new functions.https.HttpsError('not-found', 'Project not found');
     }
 
-    const projectData = project.data();
-    if (projectData?.userId !== context.auth?.uid) {
+    const projectData = project.data() as ProjectDocument;
+    if (projectData.userId !== context.auth!.uid) {
       throw new functions.https.HttpsError('permission-denied', 'Not authorized to update this project');
     }
 
-    // Clean up updates object to remove undefined values
-    const cleanUpdates = Object.entries(updates).reduce<Record<string, unknown>>((acc, [key, value]) => {
-      if (value !== undefined) {
-        acc[key] = value;
-      }
-      return acc;
-    }, {});
-
-    // If results is being updated, ensure it has the correct structure
-    if (cleanUpdates.results) {
-      cleanUpdates.results = {
-        status: cleanUpdates.results.status || 'pending',
-        ...(cleanUpdates.results.data && { data: cleanUpdates.results.data }),
-        ...(cleanUpdates.results.error && { error: cleanUpdates.results.error })
-      };
-    }
+    // Clean and validate updates
+    const cleanUpdates = cleanProjectUpdates(updates);
 
     // Update project with cleaned data
     await projectRef.update({
@@ -197,7 +245,7 @@ export const deleteProject = functions.https.onCall(async (data: { projectId: st
     // Delete project and update user's projects array in a transaction
     await admin.firestore().runTransaction(async (transaction) => {
       transaction.delete(projectRef);
-      transaction.update(admin.firestore().collection('users').doc(context.auth.uid), {
+      transaction.update(admin.firestore().collection('users').doc(context.auth!.uid), {
         projects: admin.firestore.FieldValue.arrayRemove(projectId)
       });
     });
@@ -230,15 +278,15 @@ export const getProjectResults = functions.https.onCall(async (data: { projectId
       throw new functions.https.HttpsError('not-found', 'Project not found');
     }
 
-    const projectData = project.data();
-    if (projectData?.userId !== context.auth.uid) {
+    const projectData = project.data() as ProjectDocument;
+    if (!projectData || projectData.userId !== context.auth.uid) {
       throw new functions.https.HttpsError('permission-denied', 'Not authorized to view this project');
     }
 
     return {
-      status: projectData?.results?.status || 'pending',
-      data: projectData?.results?.data,
-      error: projectData?.results?.error
+      status: projectData.results?.status || 'pending',
+      data: projectData.results?.data || null,
+      error: projectData.results?.error || null
     };
   } catch (error) {
     console.error('Error getting project results:', error);
@@ -260,29 +308,30 @@ export const getProjects = functions.https.onCall(async (data: { projectIds: str
 
   try {
     const { projectIds } = data;
-    
-    if (!projectIds || !Array.isArray(projectIds)) {
+
+    if (!Array.isArray(projectIds)) {
       throw new functions.https.HttpsError('invalid-argument', 'Project IDs must be an array');
     }
 
-    if (projectIds.length > 100) {
-      throw new functions.https.HttpsError('invalid-argument', 'Cannot request more than 100 projects at once');
-    }
-
+    // Get all projects in a batch
     const projectRefs = projectIds.map(id => 
       admin.firestore().collection('projects').doc(id)
     );
 
-    const projects = await admin.firestore().getAll(...projectRefs);
-    
-    const results = projects
-      .filter(doc => doc.exists && doc.data()?.userId === context.auth?.uid)
+    const projectDocs = await admin.firestore().getAll(...projectRefs);
+
+    // Filter out non-existent projects and unauthorized access
+    const projects = projectDocs
+      .filter(doc => {
+        const data = doc.data() as ProjectDocument | undefined;
+        return doc.exists && data && data.userId === context.auth!.uid;
+      })
       .map(doc => ({
         id: doc.id,
-        ...doc.data()
+        ...(doc.data() as ProjectDocument)
       }));
 
-    return { projects: results };
+    return { projects };
   } catch (error) {
     console.error('Error getting projects:', error);
     throw new functions.https.HttpsError(

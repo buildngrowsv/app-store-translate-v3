@@ -1,11 +1,11 @@
 Current objective:
 
-Move all back end operations to a back end in firebase functions.
+Take learnings about the webhooks to the production environment.
 
 
 ALWAYS start with the following:
 
-- Pull the folder tree with “tree -L 3”
+- Pull the folder tree with “tree -L 2”
 - ALWAYS perform multiple search and read of files until you understand the codebase, do not rely on your existing context.
 
 Include copious comments throughout the codebase.

@@ -66,4 +66,7 @@ export class ProjectService {
       throw new Error(error.message || 'Failed to get projects');
     }
   }
-} 
+}
+
+// Export a singleton instance
+export const projectService = new ProjectService(); 

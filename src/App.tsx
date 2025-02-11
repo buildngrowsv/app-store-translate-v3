@@ -20,80 +20,77 @@ import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
 import { Settings } from './pages/Settings';
 import { ProjectWizard } from './components/wizard/ProjectWizard';
-import { ProjectResults } from './pages/ProjectResults';
+import { ProjectResultsPage } from './pages/ProjectResults';
 import { Language, languageMap } from './i18n';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { ThemeProvider } from './contexts/ThemeContext';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
-    <ThemeProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-        <Header />
-        <main className="pt-16">
-          <Routes>
-            <Route path="/" element={<Home lang="english" />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      <Header />
+      <main className="pt-16">
+        <Routes>
+          <Route path="/" element={<Home lang="english" />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/project/new"
+            element={
+              <ProtectedRoute>
+                <ProjectWizard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/project/:id/results"
+            element={
+              <ProtectedRoute>
+                <ProjectResultsPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* Language routes */}
+          {Object.keys(languageMap).map((lang) => (
             <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
+              key={lang}
+              path={`/${lang === 'english' ? '' : lang}`}
+              element={<Home lang={lang as Language} />}
             />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/project/new"
-              element={
-                <ProtectedRoute>
-                  <ProjectWizard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/project/:id/results"
-              element={
-                <ProtectedRoute>
-                  <ProjectResults />
-                </ProtectedRoute>
-              }
-            />
-            {/* Language routes */}
-            {Object.keys(languageMap).map((lang) => (
-              <Route
-                key={lang}
-                path={`/${lang === 'english' ? '' : lang}`}
-                element={<Home lang={lang as Language} />}
-              />
-            ))}
-          </Routes>
-        </main>
-        <Toaster 
-          position="top-right"
-          toastOptions={{
-            className: 'dark:bg-gray-800 dark:text-white',
-            duration: 5000,
-            style: {
-              background: 'var(--toast-bg)',
-              color: 'var(--toast-color)',
-            },
-          }}
-        />
-      </div>
-    </ThemeProvider>
+          ))}
+        </Routes>
+      </main>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          className: 'dark:bg-gray-800 dark:text-white',
+          duration: 5000,
+          style: {
+            background: 'var(--toast-bg)',
+            color: 'var(--toast-color)',
+          },
+        }}
+      />
+    </div>
   );
 }
 

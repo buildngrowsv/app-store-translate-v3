@@ -11,57 +11,167 @@
 import * as functions from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
 import Stripe from 'stripe';
+import cors from 'cors';
+import { syncStripeDataToFirestore } from './sync';
 
 const stripe = new Stripe(functions.config().stripe.secret_key, {
-  apiVersion: '2023-10-16'
+  apiVersion: '2023-08-16'
 });
 
+// Initialize CORS middleware
+const corsHandler = cors({
+  origin: true, // Allow all origins for webhook
+  methods: ['POST'], // Only allow POST method
+  allowedHeaders: ['stripe-signature', 'content-type'], // Required headers
+});
+
+// Events we want to track for subscription updates
+const SUBSCRIPTION_EVENTS = [
+  'checkout.session.completed',
+  'customer.subscription.created',
+  'customer.subscription.updated',
+  'customer.subscription.deleted',
+  'customer.subscription.paused',
+  'customer.subscription.resumed',
+  'customer.subscription.pending_update_applied',
+  'customer.subscription.pending_update_expired',
+  'customer.subscription.trial_will_end',
+  'invoice.paid',
+  'invoice.payment_failed',
+  'invoice.payment_action_required',
+  'invoice.upcoming',
+  'invoice.marked_uncollectible',
+  'invoice.payment_succeeded',
+  'payment_intent.succeeded',
+  'payment_intent.payment_failed',
+  'payment_intent.canceled',
+] as const;
+
+// Event handler type
+type EventHandler<T> = (data: T) => Promise<void>;
+
+// Event handlers map
+const eventHandlers: Record<string, EventHandler<any>> = {
+  'checkout.session.completed': handleCheckoutSessionCompleted,
+  'customer.subscription.updated': handleSubscriptionChange,
+  'customer.subscription.deleted': handleSubscriptionDeletion
+};
+
 export const stripeWebhook = functions.https.onRequest(async (req, res) => {
+  console.log('Webhook request received', {
+    method: req.method,
+    headers: req.headers,
+    path: req.path,
+    body: typeof req.body === 'string' ? 'string' : 'parsed'
+  });
+
+  // Handle CORS
+  await new Promise((resolve) => corsHandler(req, res, resolve));
+  console.log('CORS check passed');
+  
   const sig = req.headers['stripe-signature'];
   const endpointSecret = functions.config().stripe.webhook_secret;
 
-  let event: Stripe.Event;
+  console.log('Validating webhook signature', {
+    hasSignature: !!sig,
+    hasSecret: !!endpointSecret,
+    signatureHeader: sig
+  });
 
-  try {
-    event = stripe.webhooks.constructEvent(
-      req.rawBody,
-      sig as string,
-      endpointSecret
-    );
-  } catch (err) {
-    console.error('Webhook signature verification failed:', err);
-    res.status(400).send(`Webhook Error: ${err.message}`);
+  if (!sig || !endpointSecret) {
+    console.error('Missing stripe signature or endpoint secret', {
+      hasSignature: !!sig,
+      hasSecret: !!endpointSecret
+    });
+    res.status(400).send('Webhook Error: Missing required headers');
     return;
   }
 
+  let event: Stripe.Event | undefined;
+
   try {
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-        await handleCheckoutSessionCompleted(session);
-        break;
-      }
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription;
-        await handleSubscriptionChange(subscription);
-        break;
-      }
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription;
-        await handleSubscriptionDeletion(subscription);
-        break;
-      }
-      default:
-        console.log(`Unhandled event type ${event.type}`);
+    console.log('Constructing event from webhook payload');
+    event = stripe.webhooks.constructEvent(
+      req.rawBody,
+      sig,
+      endpointSecret
+    );
+    
+    console.log('Successfully constructed event', {
+      eventType: event.type,
+      eventId: event.id,
+      timestamp: new Date().toISOString(),
+      apiVersion: event.api_version,
+      data: event.data.object
+    });
+
+    // Only process events we care about
+    if (!SUBSCRIPTION_EVENTS.includes(event.type as any)) {
+      console.log(`Ignoring untracked event type: ${event.type}`);
+      res.json({ received: true, status: 'ignored' });
+      return;
     }
 
-    res.json({ received: true });
+    // Get customerId from event
+    const { customer: customerId } = event.data.object as {
+      customer?: string;
+    };
+
+    if (typeof customerId !== 'string') {
+      console.error(`No customer ID found in event: ${event.type}`, {
+        eventType: event.type,
+        eventId: event.id,
+        object: event.data.object
+      });
+      throw new Error(`No customer ID found in event: ${event.type}`);
+    }
+
+    // Handle the event using appropriate handler
+    const handler = eventHandlers[event.type];
+    if (handler) {
+      await handler(event.data.object);
+    }
+
+    console.log('Syncing Stripe data to Firestore', {
+      customerId,
+      eventType: event.type,
+      eventId: event.id
+    });
+
+    // Sync Stripe data to Firestore
+    await syncStripeDataToFirestore(customerId);
+
+    console.log('Successfully processed webhook event', {
+      eventType: event.type,
+      eventId: event.id,
+      customerId
+    });
+
+    res.json({ 
+      received: true,
+      status: 'processed',
+      type: event.type,
+      id: event.id
+    });
   } catch (error) {
-    console.error('Error processing webhook:', error);
-    res.status(500).send('Webhook processing failed');
+    console.error('Webhook error:', error instanceof Error ? {
+      message: error.message,
+      stack: error.stack,
+      eventType: event?.type,
+      eventId: event?.id,
+      name: error.name
+    } : error);
+    
+    res.status(400).json({
+      error: {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        type: 'webhook_error'
+      }
+    });
   }
 });
 
+// Event handlers
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
   const { client_reference_id: userId, subscription: subscriptionId } = session;
 

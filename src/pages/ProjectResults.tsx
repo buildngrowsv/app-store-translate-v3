@@ -1,73 +1,55 @@
+/*
+* File: src/pages/ProjectResults.tsx
+* Description: Project results page component
+* Details: Displays and processes project results
+* - Uses Firebase Functions for project operations
+* - Shows loading states and animations
+* - Handles errors and retries
+* Date: 2024-03-20
+*/
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { openaiService } from '../services/openai/index';
-import { ResultsView } from '../components/results/ResultsView';
-import { FirebaseService } from '../services/firebase';
-import { DocumentData } from 'firebase/firestore';
-import { Loader2 } from 'lucide-react';
-import { Project as BaseProject } from '../types';
+import { openaiService } from '../services/openai';
+import { projectService } from '../services/project';
+import type { Project, ProjectResults } from '../types';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import { ErrorMessage } from '../components/ErrorMessage';
+import { ResultsDisplay } from '../components/results/ResultsDisplay';
+import { Button } from '../components/Button';
 
-// Extend the base Project type to handle error state in Firestore
-interface ProjectData extends Omit<BaseProject, 'results'> {
-  results?: {
-    status: 'in-progress' | 'completed' | 'error';
-    data?: any;
-    error?: string;
-  };
-}
-
-export const ProjectResults: React.FC = () => {
+export const ProjectResultsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { user } = useAuth();
-  const [project, setProject] = useState<BaseProject | null>(null);
+  const navigate = useNavigate();
+  const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [processingError, setProcessingError] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
       if (!user || !id) {
-        navigate('/dashboard');
+        navigate('/login');
         return;
       }
 
       try {
-        const projectData = await FirebaseService.getProject(id) as ProjectData;
-        if (!projectData) {
-          navigate('/dashboard');
+        const [fetchedProject] = await projectService.getProjects([id]);
+        if (!fetchedProject) {
+          setError('Project not found');
+          setIsLoading(false);
           return;
         }
 
-        // Convert Firestore data to BaseProject type
-        const project: BaseProject = {
-          id: projectData.id,
-          name: projectData.name,
-          description: projectData.description,
-          keywords: projectData.keywords || '',
-          type: projectData.type,
-          languages: projectData.languages || [],
-          lastUpdated: projectData.lastUpdated,
-          results: projectData.results?.status === 'error' || !projectData.results
-            ? undefined
-            : {
-                status: projectData.results.status,
-                data: projectData.results.data
-              }
-        };
+        setProject(fetchedProject);
+        setIsLoading(false);
 
-        setProject(project);
-        console.log('Current project:', project);
-        
-        // Only process if no results exist or if they're in-progress and not already processing
-        if ((!project.results || project.results.status === 'in-progress') && !isProcessing) {
-          console.log('Processing project as no results exist or in-progress');
-          processProject(project);
-        } else {
-          console.log('Project already has results or is being processed:', project.results);
-          setIsLoading(false);
+        // If project is pending or has no results, start processing
+        if (!fetchedProject.results || fetchedProject.results.status === 'pending') {
+          await processProject(fetchedProject);
         }
       } catch (error) {
         console.error('Error fetching project:', error);
@@ -77,9 +59,9 @@ export const ProjectResults: React.FC = () => {
     };
 
     fetchProject();
-  }, [user, id, navigate, isProcessing]);
+  }, [user, id, navigate]);
 
-  const processProject = async (project: BaseProject) => {
+  const processProject = async (project: Project) => {
     if (isProcessing) {
       console.log('Already processing, skipping duplicate call');
       return;
@@ -91,48 +73,52 @@ export const ProjectResults: React.FC = () => {
     
     try {
       // Update project status to in-progress
-      await FirebaseService.updateProject(project.id, {
+      await projectService.updateProject(project.id, {
         results: {
-          status: 'in-progress'
+          status: 'pending',
+          data: null,
+          error: null
         }
       });
 
-      // Process with Worker
+      // Process with OpenAI
       const results = await openaiService.processProject(project);
       console.log('Project processing results:', results);
       
       // Update project with results
-      await FirebaseService.updateProject(project.id, { 
+      await projectService.updateProject(project.id, { 
         results: {
           status: 'completed',
-          data: results.data
+          data: results.data,
+          error: null
         }
       });
 
-      setProject(prev => prev ? { 
-        ...prev, 
-        results: {
-          status: 'completed',
-          data: results.data
-        }
-      } : null);
+      // Fetch updated project
+      const [updatedProject] = await projectService.getProjects([project.id]);
+      setProject(updatedProject);
       
     } catch (error) {
       console.error('Failed to process project:', error);
       
-      await FirebaseService.updateProject(project.id, {
+      await projectService.updateProject(project.id, {
         results: {
           status: 'error',
-          error: 'Failed to process project'
+          data: null,
+          error: error instanceof Error ? error.message : 'Failed to process project'
         }
       });
 
       setProcessingError('Failed to process project. Please try again.');
-      setProject(prev => prev ? { ...prev, results: undefined } : null);
     } finally {
       setIsLoading(false);
       setIsProcessing(false);
     }
+  };
+
+  const handleRetry = async () => {
+    if (!project) return;
+    await processProject(project);
   };
 
   const handleSave = async () => {
@@ -142,10 +128,8 @@ export const ProjectResults: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center items-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin" />
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -153,15 +137,10 @@ export const ProjectResults: React.FC = () => {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center text-red-600">
-          <p>{error}</p>
-          <button 
-            onClick={() => navigate('/dashboard')}
-            className="mt-4 text-blue-600 hover:text-blue-500"
-          >
-            Return to Dashboard
-          </button>
-        </div>
+        <ErrorMessage message={error} />
+        <Button onClick={() => navigate('/dashboard')} className="mt-4">
+          Back to Dashboard
+        </Button>
       </div>
     );
   }
@@ -169,15 +148,10 @@ export const ProjectResults: React.FC = () => {
   if (!project) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p>Project not found</p>
-          <button 
-            onClick={() => navigate('/dashboard')}
-            className="mt-4 text-blue-600 hover:text-blue-500"
-          >
-            Return to Dashboard
-          </button>
-        </div>
+        <ErrorMessage message="Project not found" />
+        <Button onClick={() => navigate('/dashboard')} className="mt-4">
+          Back to Dashboard
+        </Button>
       </div>
     );
   }
@@ -185,28 +159,32 @@ export const ProjectResults: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2">{project.name}</h1>
-        <p className="text-gray-600">{project.description}</p>
+        <h1 className="text-3xl font-bold mb-2">{project.name}</h1>
+        <p className="text-gray-600 dark:text-gray-400">{project.description}</p>
       </div>
 
-      {project.results?.status === 'completed' && project.results.data && (
-        <ResultsView 
-          type={project.type} 
-          data={project.results.data} 
-          onSave={handleSave}
-        />
-      )}
-
-      {processingError && (
-        <div className="text-center text-red-600">
-          <p>{processingError}</p>
-          <button 
-            onClick={() => processProject(project)}
-            className="mt-4 text-blue-600 hover:text-blue-500"
-          >
-            Try Again
-          </button>
+      {isProcessing ? (
+        <div className="flex flex-col items-center justify-center py-12">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-lg">Processing your project...</p>
         </div>
+      ) : (
+        <>
+          {processingError ? (
+            <div className="mb-8">
+              <ErrorMessage message={processingError} />
+              <Button onClick={handleRetry} className="mt-4">
+                Retry Processing
+              </Button>
+            </div>
+          ) : (
+            <ResultsDisplay 
+              results={project.results} 
+              onSave={handleSave}
+              onRetry={handleRetry}
+            />
+          )}
+        </>
       )}
     </div>
   );

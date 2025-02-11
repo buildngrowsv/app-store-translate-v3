@@ -12,7 +12,7 @@ import * as admin from 'firebase-admin';
 import Stripe from 'stripe';
 import { OpenAI } from 'openai';
 import { UserRecord } from 'firebase-admin/auth';
-import * as cors from 'cors';
+import cors from 'cors';
 import { generateASOContent } from './openai/aso';
 
 interface TranslationRequest {
@@ -41,7 +41,7 @@ const corsHandler = cors({
 
 // Initialize Stripe
 const stripe = new Stripe(functions.config().stripe.secret_key, {
-  apiVersion: '2023-10-16',
+  apiVersion: '2023-08-16'
 });
 
 // Initialize OpenAI
@@ -401,9 +401,11 @@ export { handleCancellationFeedback } from './stripe/feedback';
 // Export auth functions
 export { signUp, signIn, resetPassword } from './auth';
 
-// Wrap all callable functions with CORS
-const wrapWithCors = (handler: functions.HttpsFunction) => {
-  return functions.https.onRequest((request, response) => {
-    corsHandler(request, response, () => handler(request, response));
-  });
-};
+// Export all functions
+export * from './auth';
+export * from './stripe';
+export * from './openai';
+export * from './projects';
+
+// Export cleanup functions
+export * from './middleware/cleanup';

@@ -17,20 +17,43 @@ interface RateLimitConfig {
   errorMessage?: string;  // Custom error message
 }
 
-// Default configurations for different types of requests
-const DEFAULT_LIMITS = {
+// Define the structure of our limits
+interface AuthLimits {
+  signup: RateLimitConfig;
+  signin: RateLimitConfig;
+  passwordReset: RateLimitConfig;
+}
+
+interface ApiLimits {
+  authenticated: RateLimitConfig;
+  unauthenticated: RateLimitConfig;
+}
+
+interface OpenAILimits {
+  translation: RateLimitConfig;
+  generation: RateLimitConfig;
+}
+
+interface LimitConfig {
+  auth: AuthLimits;
+  api: ApiLimits;
+  openai: OpenAILimits;
+}
+
+// Define the limits with proper typing
+const DEFAULT_LIMITS: LimitConfig = {
   auth: {
-    signup: { windowMs: 60 * 60 * 1000, maxRequests: 5 },  // 5 requests per hour
-    signin: { windowMs: 15 * 60 * 1000, maxRequests: 10 }, // 10 requests per 15 minutes
-    passwordReset: { windowMs: 60 * 60 * 1000, maxRequests: 3 } // 3 requests per hour
+    signup: { windowMs: 60 * 60 * 1000, maxRequests: 5, errorMessage: 'Too many signup attempts' },
+    signin: { windowMs: 15 * 60 * 1000, maxRequests: 10, errorMessage: 'Too many signin attempts' },
+    passwordReset: { windowMs: 60 * 60 * 1000, maxRequests: 3, errorMessage: 'Too many password reset attempts' }
   },
   api: {
-    authenticated: { windowMs: 60 * 1000, maxRequests: 100 },    // 100 requests per minute
-    unauthenticated: { windowMs: 60 * 1000, maxRequests: 20 }    // 20 requests per minute
+    authenticated: { windowMs: 60 * 1000, maxRequests: 100, errorMessage: 'Rate limit exceeded' },
+    unauthenticated: { windowMs: 60 * 1000, maxRequests: 20, errorMessage: 'Rate limit exceeded' }
   },
   openai: {
-    translation: { windowMs: 60 * 1000, maxRequests: 10 },      // 10 requests per minute
-    generation: { windowMs: 60 * 1000, maxRequests: 5 }         // 5 requests per minute
+    translation: { windowMs: 60 * 1000, maxRequests: 10, errorMessage: 'Translation rate limit exceeded' },
+    generation: { windowMs: 60 * 1000, maxRequests: 5, errorMessage: 'Generation rate limit exceeded' }
   }
 };
 
@@ -99,15 +122,29 @@ export class RateLimiter {
   }
 }
 
-// Middleware factory for different types of rate limiting
-export function createRateLimiter(type: keyof typeof DEFAULT_LIMITS, subType: string) {
-  const config = DEFAULT_LIMITS[type][subType];
+// Type-safe function to get config
+function getConfig<T extends keyof LimitConfig, S extends keyof LimitConfig[T]>(
+  type: T,
+  subType: S
+): RateLimitConfig {
+  // We know this is safe because our DEFAULT_LIMITS matches the LimitConfig type
+  // and all values in it conform to RateLimitConfig
+  return DEFAULT_LIMITS[type][subType] as RateLimitConfig;
+}
+
+// Update createRateLimiter function with proper typing
+export function createRateLimiter<T extends keyof LimitConfig, S extends keyof LimitConfig[T]>(
+  type: T,
+  subType: S
+) {
+  const config = getConfig(type, subType);
   const limiter = new RateLimiter(config);
 
   return async (context: functions.https.CallableContext | null): Promise<void> => {
     const identifier = context?.auth?.uid || context?.rawRequest?.ip || 'anonymous';
+    const key = `${String(type)}:${String(subType)}`;
     
-    if (await limiter.isRateLimited(identifier, `${type}:${subType}`)) {
+    if (await limiter.isRateLimited(identifier, key)) {
       throw new functions.https.HttpsError(
         'resource-exhausted',
         config.errorMessage || 'Too many requests, please try again later'
@@ -121,14 +158,14 @@ export const authLimiter = {
   signup: createRateLimiter('auth', 'signup'),
   signin: createRateLimiter('auth', 'signin'),
   passwordReset: createRateLimiter('auth', 'passwordReset')
-};
+} as const;
 
 export const apiLimiter = {
   authenticated: createRateLimiter('api', 'authenticated'),
   unauthenticated: createRateLimiter('api', 'unauthenticated')
-};
+} as const;
 
 export const openaiLimiter = {
   translation: createRateLimiter('openai', 'translation'),
   generation: createRateLimiter('openai', 'generation')
-}; 
+} as const; 

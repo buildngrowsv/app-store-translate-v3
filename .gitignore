@@ -12,3 +12,5 @@ dist
 .env.example
 .env.local.example
 .dev.vars
+runtimeconfig.json
+.runtimeconfig.json

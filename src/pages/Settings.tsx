@@ -61,31 +61,40 @@ export const Settings: React.FC = () => {
     const sessionId = searchParams.get('session_id');
     
     if (sessionId) {
-      // Clear the URL parameter
-      window.history.replaceState({}, '', window.location.pathname);
+      // Show loading state immediately
+      const loadingToast = toast.loading('Verifying your subscription...');
       
-      // Show loading state
-      setIsLoadingStripe(true);
-
-      // Refresh user data to get updated subscription status
-      refreshUserData()
-        .then(() => {
-          // Show success message
-          toast.success('Your subscription has been successfully updated.', {
-            duration: 5000,
+      // Clear the URL parameter but maintain history
+      const newUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, '', newUrl);
+      
+      // Add a small delay to ensure Stripe webhook has processed
+      setTimeout(() => {
+        refreshUserData()
+          .then(() => {
+            toast.dismiss(loadingToast);
+            toast.success('Subscription activated successfully! Welcome to premium.', {
+              duration: 6000,
+              icon: '🎉'
+            });
+            
+            // Track successful subscription
+            trackEvent('subscription_activated', {
+              sessionId,
+              timestamp: new Date().toISOString()
+            });
+          })
+          .catch(error => {
+            console.error('Error refreshing subscription status:', error);
+            toast.dismiss(loadingToast);
+            toast.error(
+              'There was an issue verifying your subscription. Please contact support if this persists.',
+              { duration: 8000 }
+            );
           });
-        })
-        .catch(error => {
-          console.error('Error refreshing user data:', error);
-          toast.error('Failed to update subscription status. Please refresh the page.', {
-            duration: 5000,
-          });
-        })
-        .finally(() => {
-          setIsLoadingStripe(false);
-        });
+      }, 2000); // 2 second delay for webhook processing
     }
-  }, [refreshUserData]);
+  }, [refreshUserData, trackEvent]);
 
   // Prefetch Stripe links when component mounts
   useEffect(() => {

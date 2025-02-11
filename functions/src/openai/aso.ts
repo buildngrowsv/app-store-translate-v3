@@ -2,9 +2,9 @@ import * as functions from 'firebase-functions/v1';
 import { OpenAI } from 'openai';
 import { generatePrompts, validateResponse } from '../prompts';
 
-// Initialize OpenAI
+// Initialize OpenAI with fallback for local development
 const openai = new OpenAI({
-  apiKey: functions.config().openai.api_key,
+  apiKey: process.env.OPENAI_API_KEY || functions.config().openai?.api_key,
 });
 
 interface ProjectData {
@@ -20,18 +20,45 @@ type OpenAIMessage = {
   content: string;
 };
 
-type OpenAIResponse = {
+// Define the expected response structure
+interface OpenAICompletion {
+  id: string;
   choices: Array<{
+    index: number;
     message: {
-      content: string;
+      role: string;
+      content: string | null;
     };
+    finish_reason: string;
   }>;
-};
+}
 
 interface ProjectResults {
   status: 'completed' | 'error';
-  data?: any;
+  data: Record<string, unknown>;
   error?: string;
+}
+
+// Type-safe response parsing with proper error handling
+function parseOpenAIResponse(completion: OpenAICompletion): Record<string, unknown> {
+  const content = completion.choices[0]?.message?.content;
+  
+  if (!content) {
+    throw new functions.https.HttpsError(
+      'internal',
+      'Invalid response format from OpenAI: Missing content'
+    );
+  }
+
+  try {
+    return JSON.parse(content) as Record<string, unknown>;
+  } catch (error) {
+    console.error('Error parsing OpenAI response:', error);
+    throw new functions.https.HttpsError(
+      'internal',
+      'Failed to parse OpenAI response as JSON'
+    );
+  }
 }
 
 export const generateASOContent = functions.https.onCall(async (data: ProjectData, context) => {
@@ -78,7 +105,7 @@ export const generateASOContent = functions.https.onCall(async (data: ProjectDat
         messages,
         temperature: 0.7,
         max_tokens: 2000,
-      });
+      }) as OpenAICompletion;
 
       if (!validateResponse(completion)) {
         throw new functions.https.HttpsError(
@@ -87,16 +114,16 @@ export const generateASOContent = functions.https.onCall(async (data: ProjectDat
         );
       }
 
-      const results = JSON.parse(completion.choices[0].message.content);
+      const results = parseOpenAIResponse(completion);
       
       return {
         status: 'completed',
         data: results,
-      };
+      } satisfies ProjectResults;
 
     } else {
       // Translation project
-      const translations = [];
+      const translations: Record<string, unknown>[] = [];
 
       for (const language of data.languages!) {
         const messages: OpenAIMessage[] = [
@@ -116,7 +143,7 @@ export const generateASOContent = functions.https.onCall(async (data: ProjectDat
           messages,
           temperature: 0.7,
           max_tokens: 2000,
-        });
+        }) as OpenAICompletion;
 
         if (!validateResponse(completion)) {
           throw new functions.https.HttpsError(
@@ -125,7 +152,7 @@ export const generateASOContent = functions.https.onCall(async (data: ProjectDat
           );
         }
 
-        const result = JSON.parse(completion.choices[0].message.content);
+        const result = parseOpenAIResponse(completion);
         translations.push({
           language,
           ...result,
@@ -135,7 +162,7 @@ export const generateASOContent = functions.https.onCall(async (data: ProjectDat
       return {
         status: 'completed',
         data: { translations },
-      };
+      } satisfies ProjectResults;
     }
   } catch (error) {
     console.error('Error in generateASOContent:', error);
